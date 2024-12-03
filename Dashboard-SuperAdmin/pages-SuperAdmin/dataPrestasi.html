@@ -49,7 +49,7 @@
       </a>
     </div>
     <hr class="horizontal dark mt-0">
-    <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
+    <div class="w-auto" id="sidenav-collapse-main">
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="nav-link " href="../pages-SuperAdmin/dashboard.html">
@@ -61,7 +61,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.html">
+          <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
@@ -70,7 +70,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataDosen.html">
+          <a class="nav-link " href="../pages-SuperAdmin/dataDosen.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
@@ -79,7 +79,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.html">
+          <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
@@ -97,7 +97,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="informasiLomba.html">
+          <a class="nav-link " href="informasiLomba.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-app text-dark text-sm opacity-10"></i>
@@ -122,9 +122,7 @@
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
-      <div class="container-fluid py-1 px-3">
-        
-      </div>
+
     </nav>
     <!-- End Navbar -->
     <div class="container-fluid py-41">
@@ -147,7 +145,7 @@
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tanggal</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Jenis</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Aksi</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-6">Aksi</th>
                       
                       <th></th>
                     </tr>
@@ -166,8 +164,8 @@
                       <td>
                           <span class="me-2 text-xs font-weight-bold" style="color: red;">Belum Diverifikasi</span>
                       </td>
-                      <td class="align-middle">
-                        <span class="action cursor-pointer text-center text-xs font-weight-bold" onclick="toggleDetails()">Detail</span>
+                      <td class="align-middle text-center text-sm">
+                        <span class="action cursor-pointer text-center text-xs font-weight-bold badge badge-sm bg-gradient-primary" onclick="toggleDetails()">Detail</span>
                       </td>
                     </tr>
                     <tr style="margin-left: 2rem;" id="details" class="details">
