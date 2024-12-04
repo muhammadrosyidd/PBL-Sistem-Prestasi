@@ -23,13 +23,16 @@
   <title>
     Input Prestasi
   </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <!--     Fonts and icons     -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
   <!-- Nucleo Icons -->
   <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-svg.css" rel="stylesheet" />
-  
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/tambahmhs.css">
   <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
@@ -48,86 +51,86 @@
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
         aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html "
-        target="_blank">
+      <a class="navbar-brand m-0"
+        href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html " target="_blank">
         <img src="../assets/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
       </a>
     </div>
     <hr class="horizontal dark mt-0">
-    <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dashboard.html">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.html">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Admin</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataDosen.html">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Dosen</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.html">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Mahasiswa</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="../pages-SuperAdmin/dataPrestasi.html">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Prestasi</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="informasiLomba.html">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-app text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Informasi Lomba</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="laporan.html">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-world-2 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Laporan</span>
-          </a>
-        </li>
+    <!-- <div class="navbar-collapse  w-auto " id="sidenav-collapse-main"> -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link " href="../pages-SuperAdmin/dashboard.html">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.html">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Data Admin</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="../pages-SuperAdmin/dataDosen.html">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Data Dosen</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.html">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Data Mahasiswa</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="../pages-SuperAdmin/dataPrestasi.html">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Data Prestasi</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="informasiLomba.html">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-app text-dark text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Informasi Lomba</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="laporan.html">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="ni ni-world-2 text-dark text-sm opacity-10"></i>
+          </div>
+          <span class="nav-link-text ms-1">Laporan</span>
+        </a>
+      </li>
 
-      </ul>
+    </ul>
     </div>
-    
+
   </aside>
   <div class="main-content position-relative max-height-vh-100 h-100">
     <!-- Navbar -->
-    
+
     <!-- End Navbar -->
     <div class="card shadow-lg mx-4 card-profile-bottom">
     </div>
@@ -181,19 +184,33 @@
                     <input class="form-control" type="text" value="Lucky">
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="form-group">
                     <label for="example-text-input" class="form-control-label">Jumlah Peserta</label>
                     <input class="form-control" type="text" value="United States">
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="example-text-input" class="form-control-label">Peringkat</label>
+                    <select class="form-control" name="jeniskelamin" id="jeniskelamin">
+                      <option value="0">Pilih Peringkat</option>
+                      <option value="1">Juara 1</option>
+                      <option value="2">Juara 2</option>
+                      <option value="1">Juara 3</option>
+                      <option value="2">Harapan 1</option>
+                      <option value="1">Harapan 2</option>
+                      <option value="2">Harapan 3</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
                   <div class="form-group">
                     <label for="example-text-input" class="form-control-label">Tanggal Mulai</label>
                     <input class="form-control" type="text" value="Jesse">
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                   <div class="form-group">
                     <label for="example-text-input" class="form-control-label">Tanggal Akhir</label>
                     <input class="form-control" type="text" value="Lucky">
@@ -253,24 +270,33 @@
                           <td>1</td>
 
                           <td>
-                            <select>
+                            <select class="select2 form-control">
                               <option>Pilih Mahasiswa</option>
+                              <option value="1">Mahasiswa 1</option>
+                              <option value="2">Mahasiswa 2</option>
+                              <option value="3">Mahasiswa 3</option>
+                              <option value="4">Mahasiswa 4</option>
+                              <option value="5">Mahasiswa 5</option>
                             </select>
                           </td>
-
+                          
                           <td>
-                            <select>
+                            <select class="form-control">
                               <option>Pilih Peran</option>
+                              <option value="1">Anggota</option>
+                              <option value="2">Personal</option>
                             </select>
                           </td>
 
                           <td>
-                            <button class="btn-delete" onclick="deleteRow(this)"><i class="fas fa-times"></i></button>
+                            <button class="btn btn-warning" onclick="deleteRow(this)"><i
+                                class="fas fa-times"></i></button>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <button class="btn-add" onclick="addRow()"><i class="fas fa-plus"></i> Tambah Mahasiswa</button>
+                    <button class="btn btn-warning btn-sm ms-auto" onclick="addRow()"><i class="fas fa-plus"></i> Tambah
+                      Mahasiswa</button>
                   </div>
                 </div>
                 <div class="container">
@@ -284,7 +310,7 @@
                         <tr>
                           <th><label for="example-text-input" class="form-control-label">No</label></th>
 
-                          <th><label for="example-text-input" class="form-control-label">Mahasiswa</label></th>
+                          <th><label for="example-text-input" class="form-control-label">Pembimbing</label></th>
 
                           <th><label for="example-text-input" class="form-control-label">Peran</label></th>
 
@@ -296,24 +322,48 @@
                           <td>1</td>
 
                           <td>
-                            <select>
+                            <select class="select2 form-control">
                               <option>Pilih Pembimbing</option>
+                              <option value="1">Pembimbing 1</option>
+                              <option value="2">Pembimbing 2</option>
+                              <option value="3">Pembimbing 3</option>
+                              <option value="4">Pembimbing 4</option>
+                              <option value="5">Pembimbing 5</option>
                             </select>
                           </td>
 
                           <td>
-                            <select>
+                            <select class="form-control">
                               <option>Pilih Pembimbing Peran</option>
+                              <option value="1">Melakukan pembinaan kegiatan mahasiswa di <br>
+                                bidang akademik (PA) dan kemahasiswaan <br>
+                                (BEM, Maperwa, dan lain-lain)</option>
+                              <option value="2">Membimbing mahasiswa menghasilkan
+                                produk saintifik bereputasi dan mendapat
+                                pengakuan tingkat Internasional</option>
+                              <option value="3">Membimbing mahasiswa menghasilkan
+                                produk saintifik bereputasi dan mendapat
+                                pengakuan tingkat Nasional</option>
+                              <option value="4">Membimbing mahasiswa mengikuti kompetisi
+                                dibidang akademik dan kemahasiswaan
+                                bereputasi dan mencapai juara tingkat
+                                Internasional</option>
+                              <option value="5">Membimbing mahasiswa mengikuti kompetisi
+                                dibidang akademik dan kemahasiswaan
+                                bereputasi dan mencapai juara tingkat
+                                Nasional</option>
                             </select>
                           </td>
 
                           <td>
-                            <button class="btn-delete" onclick="deleteRow(this)"><i class="fas fa-times"></i></button>
+                            <button class="btn btn-warning" onclick="deleteRow(this)"><i
+                                class="fas fa-times"></i></button>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <button class="btn-add" onclick="addRow1()"><i class="fas fa-plus"></i> Tambah Pembimbing</button>
+                    <button class="btn btn-warning btn-sm ms-auto" onclick="addRow1()"><i class="fas fa-plus"></i>
+                      Tambah Pembimbing</button>
                   </div>
                 </div>
               </div>
@@ -325,13 +375,41 @@
             </div>
           </div>
         </div>
-        
+
       </div>
 
     </div>
   </div>
 
   <!--   Core JS Files   -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('.select2').select2({
+        placeholder: "Pilih Mahasiswa",
+        minimumInputLength: 5,
+        language: {
+          inputTooShort: function () {
+            return "Please enter 5 or more characters";
+          }
+        }
+      });
+    });
+  </script>
+  <script>
+    $(document).ready(function () {
+      $('.select2').select2({
+        placeholder: "Pilih Pembimbing",
+        minimumInputLength: 5,
+        language: {
+          inputTooShort: function () {
+            return "Please enter 5 or more characters";
+          }
+        }
+      });
+    });
+  </script>
   <script>
     function addRow() {
       var table = document.getElementById("mahasiswaTable").getElementsByTagName('tbody')[0];
@@ -344,9 +422,9 @@
       var cell4 = row.insertCell(3);
 
       cell1.innerHTML = rowCount + 1;
-      cell2.innerHTML = '<select><option>Pilih Mahasiswa</option></select>';
-      cell3.innerHTML = '<select><option>Pilih Peran</option></select>';
-      cell4.innerHTML = '<button class="btn-delete" onclick="deleteRow(this)"><i class="fas fa-times"></i></button>';
+      cell2.innerHTML = '<select class="form-control"><option>Pilih Mahasiswa</option></select>';
+      cell3.innerHTML = '<select class="form-control"><option>Pilih Peran</option></select>';
+      cell4.innerHTML = '<button class="btn btn-warning" onclick="deleteRow(this)"><i class="fas fa-times"></i></button>';
     }
 
     function deleteRow(button) {
@@ -374,9 +452,9 @@
       var cell4 = row.insertCell(3);
 
       cell1.innerHTML = rowCount + 1;
-      cell2.innerHTML = '<select><option>Pilih Pembimbing</option></select>';
-      cell3.innerHTML = '<select><option>Pilih Peran Pembimbing</option></select>';
-      cell4.innerHTML = '<button class="btn-delete" onclick="deleteRow(this)"><i class="fas fa-times"></i></button>';
+      cell2.innerHTML = '<select class="form-control"><option>Pilih Pembimbing</option></select>';
+      cell3.innerHTML = '<select class="form-control"><option>Pilih Peran Pembimbing</option></select>';
+      cell4.innerHTML = '<button class="btn btn-warning" onclick="deleteRow(this)"><i class="fas fa-times"></i></button>';
     }
 
     function deleteRow(button) {

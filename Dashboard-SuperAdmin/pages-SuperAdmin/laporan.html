@@ -143,14 +143,14 @@
                                 <h5>Pilih Tanggal</h5>
                               
                               <label for="tanggal mulai">Tanggal Awal</label>
-                              <input class="form-control" type="date">
+                              <input id="tanggalAwal" class="form-control" type="date">
                             </div>
                           </div>
                           <div style="padding-left: 2.2rem; padding-right: 2.2rem;" class="col-md-12">
                             <div class="form-group">
                               
                               <label for="tanggal mulai">Tanggal Akhir</label>
-                              <input class="form-control" type="date">
+                              <input id="tanggalAkhir" class="form-control" type="date">
                             </div>
                           </div>
                         <div class="card-body px-0 pt-0 pb-2">
@@ -164,18 +164,21 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header pb-0">
-                            <h6 style="text-align: center;">Laporan Data</h6>
+                            <h6 style="text-align: center;">Preview Laporan Data</h6>
                         </div>
                         <div class="card-body px-0 pt-0 pb-2">
                             <div class="table-responsive">
-                                <table class="table align-items-center mb-0">
+                                <table class="table align-items-center justify-content-center mb-0">
                                     <thead>
                                         <tr>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">No</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">Tanggal</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">Nama</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">Prestasi</th>
-                                        </tr>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Kompetisi</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tanggal</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Jenis</th>
+                                           
+                                            
+                                            <th></th>
+                                          </tr>
                                     </thead>
                                     <tbody id="laporanTabel">
                                         <!-- Data akan diisi melalui JavaScript -->
@@ -222,10 +225,10 @@
                 if (filteredData.length > 0) {
                     filteredData.forEach(item => {
                         const row = `<tr>
-                            <td>${item.no}</td>
-                            <td>${item.tanggal}</td>
-                            <td>${item.nama}</td>
-                            <td>${item.prestasi}</td>
+                            <td style="margin: 0.5rem;" class="text-center text-xs font-weight-bold">${item.no}</td>
+                            <td class=" text-xs font-weight-bold">${item.tanggal}</td>
+                            <td class=" text-xs font-weight-bold">${item.nama}</td>
+                            <td class=" text-xs font-weight-bold">${item.prestasi}</td>
                         </tr>`;
                         laporanTabel.innerHTML += row;
                     });
