@@ -51,7 +51,7 @@
             </a>
         </div>
         <hr class="horizontal dark mt-0">
-        <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
+        <!-- <div class=" navbar-collapse  w-auto " id="sidenav-collapse-main"> -->
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="../pages-SuperAdmin/dashboard.html">
@@ -160,9 +160,81 @@
                     </div>
                 </div>
             </div>
-
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header pb-0">
+                            <h6 style="text-align: center;">Laporan Data</h6>
+                        </div>
+                        <div class="card-body px-0 pt-0 pb-2">
+                            <div class="table-responsive">
+                                <table class="table align-items-center mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">No</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">Tanggal</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">Nama</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder">Prestasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="laporanTabel">
+                                        <!-- Data akan diisi melalui JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
         </div>
+        
+        
+    </div>
+    
+    <script>
+        // Data dummy untuk laporan
+        const laporanData = [
+            { no: 1, tanggal: '2024-12-01', nama: 'John Doe', prestasi: 'Juara 1 Lomba Coding' },
+            { no: 2, tanggal: '2024-12-02', nama: 'Jane Smith', prestasi: 'Juara 2 Hackathon' },
+            { no: 3, tanggal: '2024-12-03', nama: 'Alice Johnson', prestasi: 'Juara 3 Desain UI' }
+        ];
+    
+        // Event listener untuk input tanggal
+        document.getElementById('tanggalAwal').addEventListener('change', filterLaporan);
+        document.getElementById('tanggalAkhir').addEventListener('change', filterLaporan);
+    
+        function filterLaporan() {
+            const tanggalAwal = document.getElementById('tanggalAwal').value;
+            const tanggalAkhir = document.getElementById('tanggalAkhir').value;
+            const laporanTabel = document.getElementById('laporanTabel');
+    
+            // Bersihkan tabel
+            laporanTabel.innerHTML = '';
+    
+            // Filter data berdasarkan tanggal
+            if (tanggalAwal && tanggalAkhir) {
+                const filteredData = laporanData.filter(data => 
+                    data.tanggal >= tanggalAwal && data.tanggal <= tanggalAkhir
+                );
+    
+                // Tampilkan data ke tabel
+                if (filteredData.length > 0) {
+                    filteredData.forEach(item => {
+                        const row = `<tr>
+                            <td>${item.no}</td>
+                            <td>${item.tanggal}</td>
+                            <td>${item.nama}</td>
+                            <td>${item.prestasi}</td>
+                        </tr>`;
+                        laporanTabel.innerHTML += row;
+                    });
+                } else {
+                    laporanTabel.innerHTML = '<tr><td colspan="4" style="text-align: center;">Tidak ada data</td></tr>';
+                }
+            }
+        }
+    </script>
     </main>
    
     <!--   Core JS Files   -->
