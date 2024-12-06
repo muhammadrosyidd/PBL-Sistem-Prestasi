@@ -1,0 +1,133 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffff;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.left {
+    position: relative;
+    background: linear-gradient(to bottom, #FDF27C, #FFC637 );
+    width: 50%;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex;
+    align-items: center;
+    text-align: center;
+    color: white;
+}
+
+.left img {
+    width: 100px;
+    margin-bottom: 20px;
+}
+
+.left h1 {
+    font-size: 36px;
+    margin: 0;
+}
+
+.left p {
+    font-size: 24px;
+    margin: 10px 0 0;
+}
+
+.illustration {
+    position: absolute;
+    bottom: -50;
+    left: -20;
+    margin-top: 12px; /* Mengatur jarak dari bawah */
+    width: 300px; /* Sesuaikan ukuran gambar */
+    height: auto; /* Biarkan tinggi gambar menyesuaikan proporsi */
+}
+
+.right {
+    background-color: white;
+    width: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    height: 30%;
+    
+}
+
+.login-form h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.login-form a {
+    display: block;
+    text-align: end;
+    margin: 10px 0;
+    color: #888;
+    text-decoration: none;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column; /* Mengatur item dalam kolom */
+    justify-content: center; /* Memposisikan item secara vertikal di tengah */
+    align-items: center; /* Memposisikan item secara horizontal di tengah */
+    height: 100%; /* Atur tinggi sesuai kebutuhan */
+}
+
+.login-form button {
+    margin-top: 50px;
+    width: 50%;
+    padding: 10px;
+    background-color: #ffeb3b;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.img-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: 12px;
+    margin-bottom: 8px;
+    width: 40px;
+    height: 40px;
+}
+.h1 {
+    font-family: Ubuntu, sans-serif;
+    font-size: 50px;
+    position: relative;
+    top: 100px; /* Menambahkan jarak ke bawah */
+    text-align: left; /* Menambahkan jarak ke kiri */
+}
