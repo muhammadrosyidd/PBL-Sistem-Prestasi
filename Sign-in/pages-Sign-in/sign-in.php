@@ -1,22 +1,6 @@
 <?php
-// Koneksi ke database
-$servername = "DESKTOP-IVR2LTO"; // Ganti dengan server database Anda
-$username = ""; 
-$password = ""; 
-$dbname = "PRESTASI"; // Nama database
-
-// Membuat koneksi
-$conn = sqlsrv_connect($servername, array(
-    "UID" => $username,
-    "PWD" => $password,
-    "Database" => $dbname,
-));
-
-// Cek koneksi
-if ($conn === false) {
-    die(print_r(sqlsrv_errors(), true));
-}
-
+// Include the DatabaseConnection class
+require_once __DIR__ . '/../../config/Connection.php';
 // Cek apakah form telah disubmit
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];

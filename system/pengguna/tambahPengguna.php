@@ -1,66 +1,49 @@
 <?php
-$use_driver = 'sqlsrv'; // atau 'mysql'
-$host = "DESKTOP-IVR2LTO"; // 'localhost'
-$username = ''; // 'sa'
-$password = '';
-$database = 'PRESTASI';
-$db;
+// Menampilkan semua error untuk debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-if ($use_driver == 'mysql') {
-    try {
-        $db = new mysqli('localhost', $username, $password, $database);
+// Mulai output buffering
+ob_start();
 
-        if ($db->connect_error) {
-            die('Connection DB failed: ' . $db->connect_error);
-        }
-    } catch (Exception $e) {
-        die($e->getMessage());
-    }
-} else if ($use_driver == 'sqlsrv') {
-    $credential = [
-        'Database' => $database,
-        'UID' => $username,
-        'PWD' => $password
-    ];
+// Include file koneksi
+require_once __DIR__ . '/../../config/Connection.php';
 
-    try {
-        $db = sqlsrv_connect($host, $credential);
-
-        if (!$db) {
-            $msg = sqlsrv_errors();
-            die($msg[0]['message']);
-        }
-    } catch (Exception $e) {
-        die($e->getMessage());
-    }
-}
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $role_id = $_POST['role_id'];
+    $role = $_POST['role'];
 
-    // SQL untuk memasukkan data
-    $query = "INSERT INTO [user] (username, password, role_id) VALUES ('$username', '$password', '$role_id')";
+    // Encode password ke MD5 (hexadecimal 32 karakter)
+    $encoded_password = md5($password);
+    // Ubah MD5 hex ke binary untuk tipe VARBINARY di database
+    $encoded_password_bin = pack('H*', $encoded_password);
 
-    if ($use_driver == 'mysql') {
-        if ($db->query($query) === TRUE) {
-            header("Location: dataPengguna.php"); // Redirect ke dataPengguna.php setelah berhasil
-            exit();
-        } else {
-            echo "Error: " . $db->error;
-        }
-    } else if ($use_driver == 'sqlsrv') {
-        $stmt = sqlsrv_query($db, $query);
-        if ($stmt) {
-            header("Location: dataPengguna.php"); // Redirect ke dataPengguna.php setelah berhasil
-            exit();
-        } else {
-            $msg = sqlsrv_errors();
-            echo "Error: " . $msg[0]['message'];
-        }
+    // SQL untuk memasukkan data pengguna ke tabel [user]
+    $query = "INSERT INTO [user] (username, password, role) 
+              VALUES (?, HASHBYTES('MD5', ?), ?)";
+    
+    // Menyiapkan parameter untuk query
+    $params = array($username, $encoded_password_bin, $role);
+
+    // Eksekusi query dengan prepared statement
+    $stmt = sqlsrv_query($conn, $query, $params);
+
+    // Mengecek apakah query berhasil
+    if ($stmt) {
+        // Redirect ke halaman dataPengguna.php setelah berhasil
+        header("Location: dataPengguna.php");
+        exit(); // Pastikan script dihentikan setelah redirect
+    } else {
+        // Menampilkan error jika query gagal
+        $msg = sqlsrv_errors();
+        echo "Error: " . $msg[0]['message'];
     }
 }
+
+// Menyelesaikan output buffering
+ob_end_flush();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -193,7 +176,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <!-- <p class="text-uppercase text-sm">User Information</p> -->
                             <div class="row">
                                 <div class="col-md-12">
-                                    <form action="prosesPengguna.php" method="POST">
+                                    <form action="" method="POST">
                                         <div class="form-group">
                                             <label for="username">Username</label>
                                             <input class="form-control" type="text" name="username" required>
@@ -203,12 +186,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <input class="form-control" type="password" name="password" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="role">Role ID</label>
+                                            <label for="role">Role</label>
                                             <select class="form-control" name="role" required>
                                                 <option value="1">1 - Super Admin</option>
                                                 <option value="2">2 - Admin</option>
                                                 <option value="3">3 - Mahasiswa</option>
-                                                <option value="4">4 - Ketua Jurusan</option>
                                             </select>
                                         </div>
                                         <button type="submit" class="btn btn-warning">Submit</button>

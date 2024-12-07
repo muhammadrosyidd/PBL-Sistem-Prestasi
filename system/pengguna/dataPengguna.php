@@ -1,45 +1,13 @@
-<?php
-$use_driver = 'sqlsrv'; // atau 'mysql'
-$host = "DESKTOP-IVR2LTO"; // 'localhost'
-$username = ''; // 'sa'
-$password = '';
-$database = 'PRESTASI';
-$db;
-
-
-
-if ($use_driver == 'mysql') {
-  try {
-    $db = new mysqli('localhost', $username, $password, $database);
-
-    if ($db->connect_error) {
-      die('Connection DB failed: ' . $db->connect_error);
-    }
-  } catch (Exception $e) {
-    die($e->getMessage());
-  }
-} else if ($use_driver == 'sqlsrv') {
-  $credential = [
-    'Database' => $database,
-    'UID' => $username,
-    'PWD' => $password
-  ];
-
-  try {
-    $db = sqlsrv_connect($host, $credential);
-
-    if (!$db) {
-      $msg = sqlsrv_errors();
-      die($msg[0]['message']);
-    }
-  } catch (Exception $e) {
-    die($e->getMessage());
-  }
-}
+<?php 
+require_once __DIR__ . '/../../config/Connection.php';
 
 // Mengambil data user
-$query = "SELECT * FROM [user] ORDER BY role_id ASC";
-$result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query);
+$query = "SELECT * FROM [user] ORDER BY role ASC";
+$result = sqlsrv_query($conn, $query);
+
+if ($result === false) {
+    die(print_r(sqlsrv_errors(), true));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -161,62 +129,48 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
         <div class="col-12">
           <div class="card mb-4">
             <div class="card-header pb-0">
-              <h6>Data Pengguna</h6>
-              <a href="../pengguna/tambahPengguna.php"><button type="button" class="btn bg-gradient-warning   mt-2 mb-0">+
-                  Pengguna</button></a>
-            </div>
-            <div class="card-body px-0 pt-0 pb-2">
-              <div class="table-responsive p-0">
-                <table class="table align-items-center mb-0">
-                  <thead>
+            <h6>Data Pengguna</h6>
+        <a href="../pengguna/tambahPengguna.php">
+            <button type="button" class="btn bg-gradient-warning mt-2 mb-0">+ Pengguna</button>
+        </a>
+    </div>
+    <div class="card-body px-0 pt-0 pb-2">
+        <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+                <thead>
                     <tr>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USERNAME</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PASSWORD</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ROLE ID</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USERNAME</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PASSWORD</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ROLE</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
                     </tr>
-                  </thead>
-                  <tbody>
+                </thead>
+                <tbody>
                     <?php
                     $no = 1; // Inisialisasi nomor urut
-                    if ($use_driver == 'mysql') {
-                      while ($row = $result->fetch_assoc()) {
-                        // Menghitung panjang password untuk menampilkan asterik
-                        $password_length = strlen($row['password']);
-                        $masked_password = str_repeat('*', $password_length); // Membuat string asterik
+
+                    while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                      // Panjang password asli dari data binary (VARBINARY)
+                      $password_length = strlen($row['password']); 
+                      $masked_password = str_repeat('*', $password_length); // Masking password sesuai panjang asli
+
                         echo "<tr>
-                                        <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['username']}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['role']}</td>
-                                        <td class='align-middle text-center text-sm'>
-                                            <span type='submit' class='action cursor-pointer text-center text-xs font-weight-bold badge badge-sm bg-gradient-primary'>Edit</span>
-                                            <span type='submit' class='action cursor-pointer text-center text-xs font-weight-bold badge badge-sm bg-gradient-danger'>Hapus</span>
-                                        </td>
-                                    </tr>";
-                        $no++; // Increment nomor urut
-                      }
-                    } else if ($use_driver == 'sqlsrv') {
-                      while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
-                        // Menghitung panjang password untuk menampilkan asterik
-                        $password_length = strlen($row['password']);
-                        $masked_password = str_repeat('*', $password_length); // Membuat string asterik
-                        echo "<tr>
-                                        <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['username']}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['role']}</td>
-                                        <td class='align-middle text-center text-sm'>
-                                            <button type='submit' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
-                                            <form action='hapusPengguna.php' method='POST' style='display:inline;'>
-                                                  <input type='hidden' name='username' value='{$row['username']}'>
-                                                  <button action='hapusPengguna.php' type='submit' class='btn bg-gradient-danger mt-0 mb-0'>Hapus</button>
-                                            </form>
-                                        </td>
-                                    </tr>";
-                        $no++; // Increment nomor urut
-                      }
+                                <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
+                                <td class='text-center text-xs font-weight-bold mb-0'>" . htmlspecialchars($row['username']) . "</td>
+                                <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
+                                <td class='text-center text-xs font-weight-bold mb-0'>" . htmlspecialchars($row['role']) . "</td>
+                                <td class='align-middle text-center text-sm'>
+                                    <a href='editPengguna.php?username=" . urlencode($row['username']) . "'>
+                                        <button type='button' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
+                                    </a>
+                                    <form action='hapusPengguna.php' method='POST' style='display:inline;'>
+                                        <input type='hidden' name='username' value='" . htmlspecialchars($row['username']) . "'>
+                                        <button type='submit' class='btn bg-gradient-danger mt-0 mb-0'>Hapus</button>
+                                    </form>
+                                </td>
+                              </tr>";
+                        $no++;
                     }
                     ?>
                   </tbody>
@@ -252,11 +206,3 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
 </body>
 
 </html>
-<?php
-// Menutup koneksi
-if ($use_driver == 'mysql') {
-  $db->close();
-} else if ($use_driver == 'sqlsrv') {
-  sqlsrv_close($db);
-}
-?>
