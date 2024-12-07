@@ -1,38 +1,40 @@
-<?php 
+<?php
 $use_driver = 'sqlsrv'; // atau 'mysql'
-$host = "DAYDREAMER"; // 'localhost'
+$host = "DESKTOP-IVR2LTO"; // 'localhost'
 $username = ''; // 'sa'
-$password = ''; 
-$database = 'PencatatanPrestasi'; 
-$db; 
+$password = '';
+$database = 'PRESTASI';
+$db;
 
-if ($use_driver == 'mysql') { 
-    try { 
-        $db = new mysqli('localhost', $username, $password, $database); 
-        
-        if ($db->connect_error) { 
-            die('Connection DB failed: ' . $db->connect_error); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
-} else if ($use_driver == 'sqlsrv') { 
-    $credential = [ 
-        'Database' => $database, 
-        'UID' => $username, 
-        'PWD' => $password 
-    ]; 
-    
-    try { 
-        $db = sqlsrv_connect($host, $credential); 
-        
-        if (!$db) { 
-            $msg = sqlsrv_errors(); 
-            die($msg[0]['message']); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
+
+
+if ($use_driver == 'mysql') {
+  try {
+    $db = new mysqli('localhost', $username, $password, $database);
+
+    if ($db->connect_error) {
+      die('Connection DB failed: ' . $db->connect_error);
+    }
+  } catch (Exception $e) {
+    die($e->getMessage());
+  }
+} else if ($use_driver == 'sqlsrv') {
+  $credential = [
+    'Database' => $database,
+    'UID' => $username,
+    'PWD' => $password
+  ];
+
+  try {
+    $db = sqlsrv_connect($host, $credential);
+
+    if (!$db) {
+      $msg = sqlsrv_errors();
+      die($msg[0]['message']);
+    }
+  } catch (Exception $e) {
+    die($e->getMessage());
+  }
 }
 
 // Mengambil data user
@@ -45,8 +47,8 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="../assets/img/jti.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="../../assets2/img/apple-icon.png">
+  <link rel="icon" type="image/png" href="../../assets2/img/jti.png">
   <title>
     Data Pengguna
   </title>
@@ -58,7 +60,7 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
   <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <!-- CSS Files -->
-  <link id="pagestyle" href="../assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
+  <link id="pagestyle" href="../../assets2/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show   bg-gray-100">
@@ -71,7 +73,7 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
         aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html "
         target="_blank">
-        <img src="../assets/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
+        <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
       </a>
     </div>
@@ -114,7 +116,7 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
             <span class="nav-link-text ms-1">Data Mahasiswa</span>
           </a>
         </li>
-        
+
         <li class="nav-item">
           <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
             <div
@@ -145,13 +147,13 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
 
       </ul>
     </div>
-    
+
   </aside>
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur"
       data-scroll="false">
-      
+
     </nav>
     <!-- End Navbar -->
     <div class="container-fluid py-41">
@@ -160,51 +162,51 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
           <div class="card mb-4">
             <div class="card-header pb-0">
               <h6>Data Pengguna</h6>
-              <a href="inputPengguna.php"><button type="button" class="btn bg-gradient-warning   mt-2 mb-0">+
+              <a href="../pengguna/tambahPengguna.php"><button type="button" class="btn bg-gradient-warning   mt-2 mb-0">+
                   Pengguna</button></a>
             </div>
             <div class="card-body px-0 pt-0 pb-2">
               <div class="table-responsive p-0">
-              <table class="table align-items-center mb-0">
-                    <thead>
-                        <tr>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USERNAME</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PASSWORD</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ROLE ID</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $no = 1; // Inisialisasi nomor urut
-                        if ($use_driver == 'mysql') {
-                            while ($row = $result->fetch_assoc()) {
-                              // Menghitung panjang password untuk menampilkan asterik
-                              $password_length = strlen($row['password']);
-                              $masked_password = str_repeat('*', $password_length); // Membuat string asterik
-                                echo "<tr>
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USERNAME</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PASSWORD</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ROLE ID</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php
+                    $no = 1; // Inisialisasi nomor urut
+                    if ($use_driver == 'mysql') {
+                      while ($row = $result->fetch_assoc()) {
+                        // Menghitung panjang password untuk menampilkan asterik
+                        $password_length = strlen($row['password']);
+                        $masked_password = str_repeat('*', $password_length); // Membuat string asterik
+                        echo "<tr>
                                         <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
                                         <td class='text-center text-xs font-weight-bold mb-0'>{$row['username']}</td>
                                         <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['role_id']}</td>
+                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['role']}</td>
                                         <td class='align-middle text-center text-sm'>
                                             <span type='submit' class='action cursor-pointer text-center text-xs font-weight-bold badge badge-sm bg-gradient-primary'>Edit</span>
                                             <span type='submit' class='action cursor-pointer text-center text-xs font-weight-bold badge badge-sm bg-gradient-danger'>Hapus</span>
                                         </td>
                                     </tr>";
-                                $no++; // Increment nomor urut
-                            }
-                        } else if ($use_driver == 'sqlsrv') {
-                            while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
-                              // Menghitung panjang password untuk menampilkan asterik
-                              $password_length = strlen($row['password']);
-                              $masked_password = str_repeat('*', $password_length); // Membuat string asterik
-                                echo "<tr>
+                        $no++; // Increment nomor urut
+                      }
+                    } else if ($use_driver == 'sqlsrv') {
+                      while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                        // Menghitung panjang password untuk menampilkan asterik
+                        $password_length = strlen($row['password']);
+                        $masked_password = str_repeat('*', $password_length); // Membuat string asterik
+                        echo "<tr>
                                         <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
                                         <td class='text-center text-xs font-weight-bold mb-0'>{$row['username']}</td>
                                         <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['role_id']}</td>
+                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['role']}</td>
                                         <td class='align-middle text-center text-sm'>
                                             <button type='submit' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
                                             <form action='hapusPengguna.php' method='POST' style='display:inline;'>
@@ -213,27 +215,27 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
                                             </form>
                                         </td>
                                     </tr>";
-                                $no++; // Increment nomor urut
-                            }
-                        }
-                        ?>
-                    </tbody>
+                        $no++; // Increment nomor urut
+                      }
+                    }
+                    ?>
+                  </tbody>
                 </table>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      
+
+
     </div>
   </main>
-  
+
   <!--   Core JS Files   -->
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="../../assets2/js/core/popper.min.js"></script>
+  <script src="../../assets2/js/core/bootstrap.min.js"></script>
+  <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../../assets2/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -246,14 +248,15 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-  <script src="../assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+  <script src="../../assets2/js/argon-dashboard.min.js?v=2.1.0"></script>
 </body>
+
 </html>
 <?php
 // Menutup koneksi
 if ($use_driver == 'mysql') {
-    $db->close();
+  $db->close();
 } else if ($use_driver == 'sqlsrv') {
-    sqlsrv_close($db);
+  sqlsrv_close($db);
 }
 ?>

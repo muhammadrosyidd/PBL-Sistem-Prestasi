@@ -1,9 +1,9 @@
 <?php
 // Koneksi ke database
-$servername = "DAYDREAMER"; // Ganti dengan server database Anda
+$servername = "DESKTOP-IVR2LTO"; // Ganti dengan server database Anda
 $username = ""; 
 $password = ""; 
-$dbname = "PencatatanPrestasi"; // Nama database
+$dbname = "PRESTASI"; // Nama database
 
 // Membuat koneksi
 $conn = sqlsrv_connect($servername, array(
@@ -22,12 +22,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Encode password ke Base64
-    $encoded_password = base64_encode($password);
+    // Encode password ke MD5 (dalam bentuk string)
+    $encoded_password = md5($password); // MD5 menghasilkan 32 karakter hexadecimal
+
+    // Ubah MD5 ke dalam bentuk binary untuk disesuaikan dengan tipe VARBINARY
+    $encoded_password_bin = pack('H*', $encoded_password); // Konversi MD5 hex ke binary
 
     // Query untuk memeriksa username dan password
-    $sql = "SELECT role_id FROM [user] WHERE username = ? AND password = ?";
-    $params = array($username, $encoded_password);
+    $sql = "SELECT role FROM [user] WHERE username = ? AND password = ?";
+    $params = array($username, $encoded_password_bin); // Kirim password dalam bentuk binary
     $stmt = sqlsrv_query($conn, $sql, $params);
 
     // Cek apakah ada hasil
@@ -36,24 +39,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (sqlsrv_has_rows($stmt)) {
-        // Ambil role_id dari hasil query
+        // Ambil role dari hasil query
         $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-        $role_id = $row['role_id'];
+        $role = $row['role'];
 
-        // Arahkan ke halaman sesuai role_id
-        switch ($role_id) {
-            case "1 - Super Admin":
-                header("Location: ../../Dashboard-SuperAdmin/pages-SuperAdmin/dashboard.html");
+        // Arahkan ke halaman sesuai role
+        switch ($role) {
+            case "1":
+                header("Location: ../../system/pageSuperAdmin/dashboard.html");
                 break;
-            case "2 - Admin":
+            case "2":
                 header("Location: ../../Dashboard-Admin/pages-Admin/dashboard.html");
                 break;
-            case "3 - Mahasiswa":
+            case "3":
                 header("Location: ../../Dashboard-Mahasiswa/pages-Mahasiswa/dashboard.html");
                 break;
-            // case "4 - Ketua Jurusan":
-            //     header("Location: ../../Dashboard-KetuaJurusan/pages-KetuaJurusan/dashboard.html");
-            //     break;
             default:
                 echo "Role tidak dikenali.";
                 break;
@@ -64,6 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
