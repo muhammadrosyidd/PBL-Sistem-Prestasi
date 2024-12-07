@@ -164,7 +164,7 @@ if ($result === false) {
                                     <a href='editPengguna.php?username=" . urlencode($row['username']) . "'>
                                         <button type='button' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
                                     </a>
-                                    <form action='hapusPengguna.php' method='POST' style='display:inline;'>
+                                    <form action='hapusPengguna.php' method='POST' style='display:inline;' onsubmit='return confirmDelete();'>
                                         <input type='hidden' name='username' value='" . htmlspecialchars($row['username']) . "'>
                                         <button type='submit' class='btn bg-gradient-danger mt-0 mb-0'>Hapus</button>
                                     </form>
@@ -180,8 +180,6 @@ if ($result === false) {
           </div>
         </div>
       </div>
-
-
     </div>
   </main>
 
@@ -198,6 +196,12 @@ if ($result === false) {
       }
       Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
+  </script>
+  <script>
+    function confirmDelete() {
+        return confirm("Apakah Anda yakin ingin menghapus pengguna ini?");
+    }
+</script>
   </script>
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
