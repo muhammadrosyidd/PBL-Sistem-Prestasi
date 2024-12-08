@@ -187,7 +187,7 @@ ob_end_flush();
                     <div class="card">
                         <div class="card-header pb-0">
                             <div class="d-flex align-items-center">
-                                <p class="mb-0">Update Pengguna</p>
+                                <p class="mb-0">Data Pengguna</p>
 
                             </div>
                         </div>
@@ -211,8 +211,8 @@ ob_end_flush();
                                         <div class="form-group">
                                             <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin</label>
                                             <select class="form-control" name="jenis_kelamin" required>
-                                                <option value="1">Laki-laki</option>
-                                                <option value="2">Perempuan</option>
+                                                <option value="L">Laki-laki</option>
+                                                <option value="P">Perempuan</option>
                                             </select>
                                         </div>
                                     </div>

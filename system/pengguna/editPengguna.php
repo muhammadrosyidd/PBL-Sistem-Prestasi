@@ -40,8 +40,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $no_telepon = $_POST['no_telepon'];
     $alamat = $_POST['alamat'];
     $role = $_POST['role'];
-    // Convert 'L' and 'P' back to 1 and 2 for database storage
-    $jenis_kelamin_db = ($jenis_kelamin == 'L') ? 1 : 2;
 
     // Jika password diubah, encode password ke MD5 (hexadecimal 32 karakter)
     if (!empty($password)) {
@@ -203,17 +201,6 @@ ob_end_flush();
 
                             </div>
                         </div>
-                        <div class="card-body">
-                            <!-- <p class="text-uppercase text-sm">User Information</p> -->
-                            <form action="" method="POST">
-                            <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header pb-0">
-                    <div class="d-flex align-items-center">
-                        <p class="mb-0">Update Pengguna</p>
-                    </div>
-                </div>
                 <div class="card-body">
                     <form action="" method="POST">
                         <div class="row">

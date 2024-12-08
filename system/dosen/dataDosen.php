@@ -1,43 +1,16 @@
-<?php 
-$use_driver = 'sqlsrv'; // atau 'mysql'
-$host = "DAYDREAMER"; // 'localhost'
-$username = ''; // 'sa'
-$password = ''; 
-$database = 'PencatatanPrestasi'; 
-$db; 
+<?php
 
-if ($use_driver == 'mysql') { 
-    try { 
-        $db = new mysqli('localhost', $username, $password, $database); 
-        
-        if ($db->connect_error) { 
-            die('Connection DB failed: ' . $db->connect_error); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
-} else if ($use_driver == 'sqlsrv') { 
-    $credential = [ 
-        'Database' => $database, 
-        'UID' => $username, 
-        'PWD' => $password 
-    ]; 
-    
-    try { 
-        $db = sqlsrv_connect($host, $credential); 
-        
-        if (!$db) { 
-            $msg = sqlsrv_errors(); 
-            die($msg[0]['message']); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
+// Include file koneksi
+require_once __DIR__ . '/../../config/Connection.php';
+
+// Mengambil data dosen untuk SQL Server
+$query = "SELECT * FROM dosen ORDER BY nama ASC";
+$result = sqlsrv_query($conn, $query);
+
+// Menangani kesalahan jika query gagal
+if (!$result) {
+    die("Query gagal: " . print_r(sqlsrv_errors(), true));
 }
-
-// Mengambil data dosen
-$query = "SELECT * FROM dosen ORDER BY nama_dosen ASC";
-$result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -114,7 +87,7 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
             <span class="nav-link-text ms-1">Data Mahasiswa</span>
           </a>
         </li>
-        
+
         <li class="nav-item">
           <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
             <div
@@ -145,13 +118,13 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
 
       </ul>
     </div>
-    
+
   </aside>
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur"
       data-scroll="false">
-     
+
     </nav>
     <!-- End Navbar -->
     <div class="container-fluid py-41">
@@ -160,69 +133,62 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
           <div class="card mb-4">
             <div class="card-header pb-0">
               <h6>Data Dosen</h6>
-              <a href="inputDosen.php"><button type="button" class="btn bg-gradient-warning   mt-2 mb-0">+
+              <a href="tambahDosen.php"><button type="button" class="btn bg-gradient-warning   mt-2 mb-0">+
                   Dosen</button></a>
             </div>
             <div class="card-body px-0 pt-0 pb-2">
               <div class="table-responsive p-0">
-              <table class="table align-items-center mb-0">
-                    <thead>
-                        <tr>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NIDN</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NAMA DOSEN</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TELEPON</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $no = 1; // Inisialisasi nomor urut
-                        if ($use_driver == 'mysql') {
-                            while ($row = $result->fetch_assoc()) {
-                                echo "<tr>
-                                        <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['nidn']}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['nama_dosen']}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['telepon']}</td>
-                                        <td class='align-middle text-center text-sm'>
-                                            <span type='submit' class='action cursor-pointer text-center text-xs font-weight-bold badge badge-sm bg-gradient-primary'>Edit</span>
-                                            <span type='submit' class='action cursor-pointer text-center text-xs font-weight-bold badge badge-sm bg-gradient-danger'>Hapus</span>
-                                        </td>
-                                    </tr>";
-                                $no++; // Increment nomor urut
-                            }
-                        } else if ($use_driver == 'sqlsrv') {
-                            while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
-                                echo "<tr>
-                                        <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['nidn']}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['nama_dosen']}</td>
-                                        <td class='text-center text-xs font-weight-bold mb-0'>{$row['telepon']}</td>
-                                        <td class='align-middle text-center text-sm'>
-                                            <button type='submit' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
-                                            <form action='hapusDosen.php' method='POST' style='display:inline;'>
-                                                  <input type='hidden' name='nidn' value='{$row['nidn']}'>
-                                                  <button action='hapusDosen.php' type='submit' class='btn bg-gradient-danger mt-0 mb-0'>Hapus</button>
-                                            </form>
-                                        </td>
-                                    </tr>";
-                                $no++; // Increment nomor urut
-                            }
-                        }
-                        ?>
-                    </tbody>
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No
+                      </th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NIDN
+                      </th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Dosen
+                      </th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Telepon
+                      </th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  <?php
+                      $no = 1; // Inisialisasi nomor urut
+                      while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                          $dosen_id = $row['dosen_id']; // Mengambil dosen_id dari query
+
+                          echo "<tr>
+                                      <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
+                                      <td class='text-center text-xs font-weight-bold mb-0'>{$row['nidn']}</td>
+                                      <td class='text-center text-xs font-weight-bold mb-0'>{$row['nama']}</td> 
+                                      <td class='text-center text-xs font-weight-bold mb-0'>{$row['telepon']}</td>
+                                      <td class='align-middle text-center text-sm'>
+                                          <a href='editDosen.php?dosen_id=" . urlencode($dosen_id) . "'>
+                                              <span class='btn btn-sm bg-gradient-primary'>Edit</span>
+                                          </a>
+                                          <form action='hapusDosen.php' method='POST' style='display:inline;' onsubmit='return confirmDelete();'>
+                                              <input type='hidden' name='dosen_id' value='" . htmlspecialchars($dosen_id) . "'>
+                                              <button type='submit' class='btn btn-sm bg-gradient-danger'>Hapus</button>
+                                          </form>
+                                      </td>
+                                </tr>";
+                          $no++; // Increment nomor urut
+                      }
+                      ?>
+                  </tbody>
                 </table>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      
+
+
     </div>
   </main>
-  
+
   <!--   Core JS Files   -->
   <script src="../../assets2/js/core/popper.min.js"></script>
   <script src="../../assets2/js/core/bootstrap.min.js"></script>
@@ -242,12 +208,5 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../../assets2/js/argon-dashboard.min.js?v=2.1.0"></script>
 </body>
+
 </html>
-<?php
-// Menutup koneksi
-if ($use_driver == 'mysql') {
-    $db->close();
-} else if ($use_driver == 'sqlsrv') {
-    sqlsrv_close($db);
-}
-?>

@@ -193,11 +193,11 @@ if ($result === false) {
                         <td class='text-center text-xs font-weight-bold mb-0'>{$role}</td>
                         <td class='align-middle text-center text-sm'>
                             <a href='editPengguna.php?username=" . urlencode($username) . "'>
-                                <span class='badge badge-sm bg-gradient-primary'>Edit</span>
+                                <span class='btn btn-sm bg-gradient-primary'>Edit</span>
                             </a>
                             <form action='hapusPengguna.php' method='POST' style='display:inline;' onsubmit='return confirmDelete();'>
                                 <input type='hidden' name='username' value='" . htmlspecialchars($username) . "'>
-                                <button type='submit' class='badge badge-sm bg-gradient-danger'>Hapus</button>
+                                <button type='submit' class='btn btn-sm bg-gradient-danger'>Hapus</button>
                             </form>
                         </td>
                     </tr>";
