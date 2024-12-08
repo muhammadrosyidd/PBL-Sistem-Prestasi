@@ -11,15 +11,15 @@ require_once __DIR__ . '/../../config/Connection.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
-    $nim = $_POST['nim'];
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $nama_depan = $_POST['nama_depan'];
-    $nama_belakang = $_POST['nama_belakang'];
-    $jenis_kelamin = $_POST['jeniskelamin'];
-    $telepon = $_POST['telepon'];
-    $alamat = $_POST['alamat'];
-    $prodi_id = $_POST['prodi_id'];
+    $nim = trim($_POST['nim']);
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+    $nama_depan = trim($_POST['nama_depan']);
+    $nama_belakang = trim($_POST['nama_belakang']);
+    $jenis_kelamin = trim($_POST['jeniskelamin']);
+    $telepon = trim($_POST['telepon']);
+    $alamat = trim($_POST['alamat']);
+    $prodi_id = trim($_POST['prodi_id']);
 
     // Tetapkan role menjadi 3 (mahasiswa)
     $role = 3;
@@ -32,16 +32,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Mulai transaksi
         sqlsrv_begin_transaction($conn);
 
-        // Encode password ke MD5 (hexadecimal 32 karakter)
-        $encoded_password = md5($password);
-
-        // Ubah MD5 hex ke binary untuk tipe VARBINARY di database
-        $encoded_password_bin = pack('H*', $encoded_password);
-
         // Query untuk memasukkan data ke tabel user
-        $query_user = "INSERT INTO [user] (username, password, role) 
-                   VALUES (?, HASHBYTES('MD5', ?), ?)";
-        $params_user = array($username, $encoded_password_bin, $role);
+        $query_user = "
+            INSERT INTO [user] (username, password, role) 
+            VALUES (?, CONVERT(VARBINARY(16), HASHBYTES('MD5', ?)), ?)";
+        $params_user = array($username, $password, $role);
 
         // Eksekusi query untuk tabel user
         $stmt_user = sqlsrv_query($conn, $query_user, $params_user);
@@ -50,8 +45,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // Query untuk memasukkan data ke tabel mahasiswa
-        $query_mahasiswa = "INSERT INTO [mahasiswa] (nim, username, nama_depan, nama_belakang, jeniskelamin, telepon, alamat, prodi_id) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $query_mahasiswa = "
+            INSERT INTO [mahasiswa] 
+            (nim, username, nama_depan, nama_belakang, jeniskelamin, telepon, alamat, prodi_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $params_mahasiswa = array($nim, $username, $nama_depan, $nama_belakang, $jenis_kelamin, $telepon, $alamat, $prodi_id);
 
         $stmt_mahasiswa = sqlsrv_query($conn, $query_mahasiswa, $params_mahasiswa);
@@ -84,6 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Menyelesaikan output buffering
 ob_end_flush();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -137,7 +135,7 @@ ob_end_flush();
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.php">
+          <a class="nav-link " href="../pengguna/dataPengguna.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
