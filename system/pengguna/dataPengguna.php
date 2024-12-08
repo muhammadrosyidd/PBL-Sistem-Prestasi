@@ -1,8 +1,23 @@
-<?php 
+<?php
 require_once __DIR__ . '/../../config/Connection.php';
 
-// Mengambil data user
-$query = "SELECT * FROM [user] ORDER BY role ASC";
+// Query untuk mengambil data dari tabel user, admin, dan superadmin
+$query = "
+    SELECT 
+    u.username, 
+    u.password, 
+    u.role,
+    ISNULL(a.nama, sa.nama) AS nama_admin,
+    ISNULL(a.jabatan, sa.jabatan) AS jabatan,
+    ISNULL(a.jeniskelamin, sa.jeniskelamin) AS jenis_kelamin,
+    ISNULL(a.telepon, sa.telepon) AS no_telepon,
+    ISNULL(a.alamat, sa.alamat) AS alamat
+FROM [user] u
+LEFT JOIN [admin] a ON u.username = a.username
+LEFT JOIN [superadmin] sa ON u.username = sa.username
+WHERE u.role IN (1, 2)
+ORDER BY u.role ASC;";
+
 $result = sqlsrv_query($conn, $query);
 
 if ($result === false) {
@@ -139,41 +154,57 @@ if ($result === false) {
             <table class="table align-items-center mb-0">
                 <thead>
                     <tr>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USERNAME</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PASSWORD</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ROLE</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jabatan</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jenis Kelamin</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Username</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Password</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No Telepon</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Alamat</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Role</th>
+                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    $no = 1; // Inisialisasi nomor urut
-
-                    while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
-                      // Panjang password asli dari data binary (VARBINARY)
-                      $password_length = strlen($row['password']); 
-                      $masked_password = str_repeat('*', $password_length); // Masking password sesuai panjang asli
-
-                        echo "<tr>
-                                <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
-                                <td class='text-center text-xs font-weight-bold mb-0'>" . htmlspecialchars($row['username']) . "</td>
-                                <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
-                                <td class='text-center text-xs font-weight-bold mb-0'>" . htmlspecialchars($row['role']) . "</td>
-                                <td class='align-middle text-center text-sm'>
-                                    <a href='editPengguna.php?username=" . urlencode($row['username']) . "'>
-                                        <button type='button' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
-                                    </a>
-                                    <form action='hapusPengguna.php' method='POST' style='display:inline;' onsubmit='return confirmDelete();'>
-                                        <input type='hidden' name='username' value='" . htmlspecialchars($row['username']) . "'>
-                                        <button type='submit' class='btn bg-gradient-danger mt-0 mb-0'>Hapus</button>
-                                    </form>
-                                </td>
-                              </tr>";
-                        $no++;
-                    }
-                    ?>
-                  </tbody>
+                <?php
+                $no = 1; // Inisialisasi nomor urut
+                while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                    // Validasi dan masking data
+                    $nama_admin = isset($row['nama_admin']) ? htmlspecialchars($row['nama_admin']) : '-';
+                    $jabatan = isset($row['jabatan']) ? htmlspecialchars($row['jabatan']) : '-';
+                    $jenis_kelamin = isset($row['jenis_kelamin']) ? htmlspecialchars($row['jenis_kelamin']) : '-';
+                    $username = isset($row['username']) ? htmlspecialchars($row['username']) : '-';
+                    $masked_password = isset($row['password']) ? str_repeat('*', strlen($row['password'])) : '-';
+                    $no_telepon = isset($row['no_telepon']) ? htmlspecialchars($row['no_telepon']) : '-';
+                    $alamat = isset($row['alamat']) ? htmlspecialchars($row['alamat']) : '-';
+                    $role = isset($row['role']) ? htmlspecialchars($row['role']) : '-';
+                    // Output data sesuai struktur tabel
+                    echo "
+                    <tr>
+                        <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
+                        <td class='text-center text-xxs font-weight-bold mb-0'>{$nama_admin}</td>
+                        <td class='text-center text-xxs font-weight-bold mb-0'>{$jabatan}</td>
+                        <td class='text-center text-xxs font-weight-bold mb-0'>{$jenis_kelamin}</td>
+                        <td class='text-center text-xs font-weight-bold mb-0'>{$username}</td>
+                        <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
+                        <td class='text-center text-xxs font-weight-bold mb-0'>{$no_telepon}</td>
+                        <td class='text-center text-xxs font-weight-bold mb-0'>{$alamat}</td>
+                        <td class='text-center text-xs font-weight-bold mb-0'>{$role}</td>
+                        <td class='align-middle text-center text-sm'>
+                            <a href='editPengguna.php?username=" . urlencode($username) . "'>
+                                <span class='badge badge-sm bg-gradient-primary'>Edit</span>
+                            </a>
+                            <form action='hapusPengguna.php' method='POST' style='display:inline;' onsubmit='return confirmDelete();'>
+                                <input type='hidden' name='username' value='" . htmlspecialchars($username) . "'>
+                                <button type='submit' class='badge badge-sm bg-gradient-danger'>Hapus</button>
+                            </form>
+                        </td>
+                    </tr>";
+                    $no++;
+                }
+                ?>
+            </tbody>
                 </table>
               </div>
             </div>

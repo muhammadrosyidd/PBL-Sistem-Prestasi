@@ -11,8 +11,13 @@ require_once __DIR__ . '/../../config/Connection.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
+    $nama_admin = $_POST['nama_admin'];
+    $jabatan = $_POST['jabatan'];
+    $jenis_kelamin = $_POST['jenis_kelamin'];
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $no_telepon = $_POST['no_telepon'];
+    $alamat = $_POST['alamat'];
     $role = $_POST['role'];
 
     // Encode password ke MD5 (hexadecimal 32 karakter)
@@ -21,27 +26,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $encoded_password_bin = pack('H*', $encoded_password);
 
     // SQL untuk memasukkan data pengguna ke tabel [user]
-    $query = "INSERT INTO [user] (username, password, role) 
-              VALUES (?, HASHBYTES('MD5', ?), ?)";
-    
-    // Menyiapkan parameter untuk query
-    $params = array($username, $encoded_password_bin, $role);
+    $query_user = "INSERT INTO [user] (username, password, role) 
+                   VALUES (?, HASHBYTES('MD5', ?), ?)";
 
-    // Eksekusi query dengan prepared statement
-    $stmt = sqlsrv_query($conn, $query, $params);
+    // Menyiapkan parameter untuk query user
+    $params_user = array($username, $encoded_password_bin, $role);
 
-    // Mengecek apakah query berhasil
-    if ($stmt) {
+    // Eksekusi query dengan prepared statement untuk tabel user
+    $stmt_user = sqlsrv_query($conn, $query_user, $params_user);
+
+    // Mengecek apakah query user berhasil
+    if ($stmt_user) {
+        // Jika role adalah super admin, masukkan ke tabel superadmin
+        if ($role == 1) {
+            $query_superadmin = "INSERT INTO [superadmin] (username, nama, jeniskelamin, telepon, alamat, jabatan) 
+                                 VALUES (?, ?, ?, ?, ?, ?)";
+            $params_superadmin = array($username, $nama_admin, $jenis_kelamin, $no_telepon, $alamat, $jabatan);
+            $stmt_superadmin = sqlsrv_query($conn, $query_superadmin, $params_superadmin);
+        }
+        // Jika role adalah admin, masukkan ke tabel admin
+        elseif ($role == 2) {
+            $query_admin = "INSERT INTO [admin] (username, nama, jeniskelamin, telepon, alamat, jabatan) 
+                            VALUES (?, ?, ?, ?, ?, ?)";
+            $params_admin = array($username, $nama_admin, $jenis_kelamin, $no_telepon, $alamat, $jabatan);
+            $stmt_admin = sqlsrv_query($conn, $query_admin, $params_admin);
+        }
+
         // Redirect ke halaman dataPengguna.php setelah berhasil
         header("Location: dataPengguna.php");
         exit(); // Pastikan script dihentikan setelah redirect
     } else {
-        // Menampilkan error jika query gagal
+        // Menampilkan error jika query user gagal
         $msg = sqlsrv_errors();
         echo "Error: " . $msg[0]['message'];
     }
 }
-
 // Menyelesaikan output buffering
 ob_end_flush();
 ?>
@@ -168,41 +187,81 @@ ob_end_flush();
                     <div class="card">
                         <div class="card-header pb-0">
                             <div class="d-flex align-items-center">
-                                <p class="mb-0">Input Pengguna</p>
+                                <p class="mb-0">Update Pengguna</p>
 
                             </div>
                         </div>
                         <div class="card-body">
                             <!-- <p class="text-uppercase text-sm">User Information</p> -->
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <form action="" method="POST">
+                            <form action="" method="POST">
+                                <div class="row">
+                                    <div class="col-md-12">
                                         <div class="form-group">
-                                            <label for="username">Username</label>
+                                            <label for="nama_admin" class="form-control-label">Nama Admin</label>
+                                            <input class="form-control" type="text" name="nama_admin" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="jabatan" class="form-control-label">Jabatan</label>
+                                            <input class="form-control" type="text" name="jabatan" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin</label>
+                                            <select class="form-control" name="jenis_kelamin" required>
+                                                <option value="1">Laki-laki</option>
+                                                <option value="2">Perempuan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="username" class="form-control-label">Username</label>
                                             <input class="form-control" type="text" name="username" required>
                                         </div>
+                                    </div>
+                                    <div class="col-md-12">
                                         <div class="form-group">
-                                            <label for="password">Password</label>
+                                            <label for="password" class="form-control-label">Password</label>
                                             <input class="form-control" type="password" name="password" required>
                                         </div>
+                                    </div>
+                                    <div class="col-md-12">
                                         <div class="form-group">
-                                            <label for="role">Role</label>
+                                            <label for="no_telepon" class="form-control-label">No Telepon</label>
+                                            <input class="form-control" type="text" name="no_telepon" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="alamat" class="form-control-label">Alamat</label>
+                                            <input class="form-control" type="text" name="alamat" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="role" class="form-control-label">Role</label>
                                             <select class="form-control" name="role" required>
                                                 <option value="1">1 - Super Admin</option>
                                                 <option value="2">2 - Admin</option>
-                                                <option value="3">3 - Mahasiswa</option>
                                             </select>
                                         </div>
+                                    </div>
+                                    <div class="col-md-12">
                                         <button type="submit" class="btn btn-warning">Submit</button>
-                                    </form>
+                                    </div>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
+    </div>
+
+    </div>
     </div>
 
     <!--   Core JS Files   -->
