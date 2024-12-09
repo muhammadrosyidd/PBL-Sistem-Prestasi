@@ -89,8 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
-  <div class="position-absolute w-100 min-height-300 top-0"
-    style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg'); background-position-y: 50%;">
+  <div class="min-height-300 bg-gradient-warning position-absolute w-100">
     <span class="mask bg-gradient-warning opacity-5"></span>
   </div>
   <aside
@@ -145,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
+          <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
@@ -209,6 +208,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input class="form-control" type="text" name="username" required>
                     </div>
                     <div class="form-group">
+                        <label for="password">Password</label>
+                        <input class="form-control" type="password" name="password" required>
+                    </div>
+                    <div class="form-group">
                         <label for="nama">Nama Mahasiswa</label>
                         <input class="form-control" type="text" name="nama" required>
                     </div>
@@ -218,6 +221,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <option value="Laki-laki">Laki-laki</option>
                             <option value="Perempuan">Perempuan</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Nomor Telepon</label>
+                        <input class="form-control" type="text" name="telepon" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Alamat</label>
+                        <input class="form-control" type="text" name="alamat" required>
                     </div>
                     <div class="form-group">
                         <label for="program_studi">Program Studi</label>

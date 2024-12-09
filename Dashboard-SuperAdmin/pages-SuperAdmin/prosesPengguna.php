@@ -38,17 +38,33 @@ if ($use_driver == 'mysql') {
 // Memeriksa apakah data POST ada
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
+    $nama_admin = isset($_POST['nama_admin']) ? $_POST['nama_admin'] : '';
+    $jabatan = isset($_POST['jabatan']) ? $_POST['jabatan'] : '';
+    $jenis_kelamin = isset($_POST['jenis_kelamin']) ? $_POST['jenis_kelamin'] : '';
     $username = isset($_POST['username']) ? $_POST['username'] : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $telepon = isset($_POST['telepon']) ? $_POST['telepon'] : '';
+    $alamat = isset($_POST['alamat']) ? $_POST['alamat'] : '';
     $role_id = isset($_POST['role_id']) ? $_POST['role_id'] : '';
 
     // Encode password ke Base64
     $encoded_password = base64_encode($password);
 
     // Cek jika semua data ada
-    if (!empty($username) && !empty($encoded_password) && !empty($role_id)) {
+    if (!empty($nama_admin) && !empty($jabatan) && !empty($jenis_kelamin) && !empty($username) && !empty($encoded_password) && !empty($telepon) && !empty($alamat) && !empty($role_id)) {
         // SQL untuk memasukkan data
-        $query = "INSERT INTO [user] (username, password, role_id) VALUES ('$username', '$encoded_password', '$role_id')";
+        if ($use_driver == 'sqlsrv') {
+            $query = "INSERT INTO [admin] (nama_admin, jabatan, jenis_kelamin, username, password, telepon, alamat, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $params = [$nama_admin, $jabatan, $jenis_kelamin, $username, $encoded_password, $telepon, $alamat, $role_id];
+            $stmt = sqlsrv_query($db, $query, $params);
+            if ($stmt) {
+                header("Location: dataPengguna.php");
+                exit();
+            } else {
+                $msg = sqlsrv_errors();
+                echo "Error: " . $msg[0]['message'];
+            }
+        }        
 
         // Eksekusi query sesuai driver
         if ($use_driver == 'mysql') {

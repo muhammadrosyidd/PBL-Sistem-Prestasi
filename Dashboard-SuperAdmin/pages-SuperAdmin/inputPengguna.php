@@ -36,12 +36,17 @@ if ($use_driver == 'mysql') {
 }
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $role_id = $_POST['role_id'];
+    $nama_admin = isset($_POST['nama_admin']) ? $_POST['nama_admin'] : '';
+    $jabatan = isset($_POST['jabatan']) ? $_POST['jabatan'] : '';
+    $jenis_kelamin = isset($_POST['jenis_kelamin']) ? $_POST['jenis_kelamin'] : '';
+    $username = isset($_POST['username']) ? $_POST['username'] : '';
+    $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $telepon = isset($_POST['telepon']) ? $_POST['telepon'] : '';
+    $alamat = isset($_POST['alamat']) ? $_POST['alamat'] : '';
+    $role_id = isset($_POST['role_id']) ? $_POST['role_id'] : '';
 
     // SQL untuk memasukkan data
-    $query = "INSERT INTO [user] (username, password, role_id) VALUES ('$username', '$password', '$role_id')";
+    $query = "INSERT INTO [admin] (nama_admin, jabatan, jenis_kelamin, username, password, telepon, alamat, role_id) VALUES ('$nama_admin', '$jabatan', '$username', '$encoded_password', '$telepon', '$alamat', '$role_id')";
 
     if ($use_driver == 'mysql') {
         if ($db->query($query) === TRUE) {
@@ -86,8 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
-  <div class="position-absolute w-100 min-height-300 top-0"
-    style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg'); background-position-y: 50%;">
+  <div class="min-height-300 bg-gradient-warning position-absolute w-100">
     <span class="mask bg-gradient-warning opacity-5"></span>
   </div>
   <aside
@@ -120,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1">Data Pengguna</span>
+            <span class="nav-link-text ms-1">Data Admin</span>
           </a>
         </li>
         <li class="nav-item">
@@ -142,7 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
+          <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
@@ -195,12 +199,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="col-md-12">
                   <form action="prosesPengguna.php" method="POST">
                     <div class="form-group">
+                        <label for="username">Nama Admin</label>
+                        <input class="form-control" type="text" name="nama_admin" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Jabatan</label>
+                        <input class="form-control" type="text" name="jabatan" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jenis_kelamin">Jenis Kelamin</label>
+                        <select class="form-control" name="jenis_kelamin" required>
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="username">Username</label>
                         <input class="form-control" type="text" name="username" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
                         <input class="form-control" type="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Nomor Telepon</label>
+                        <input class="form-control" type="text" name="telepon" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Alamat</label>
+                        <input class="form-control" type="text" name="alamat" required>
                     </div>
                     <div class="form-group">
                         <label for="role">Role ID</label>

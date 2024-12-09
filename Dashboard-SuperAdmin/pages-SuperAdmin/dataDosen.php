@@ -61,7 +61,7 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
   <link id="pagestyle" href="../assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
 </head>
 
-<body class="g-sidenav-show   bg-gray-100">
+<body class="g-sidenav-show bg-gray-100">
   <div class="min-height-300 bg-gradient-warning position-absolute w-100"></div>
   <aside
     class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 "
@@ -116,7 +116,7 @@ $result = $use_driver == 'mysql' ? $db->query($query) : sqlsrv_query($db, $query
         </li>
         
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
+          <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>

@@ -112,7 +112,7 @@ if ($result === false) {
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../pages-SuperAdmin/dataPrestasi.html">
+                    <a class="nav-link" href="../pages-SuperAdmin/dataPrestasi.php">
                         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
                         </div>
@@ -143,7 +143,7 @@ if ($result === false) {
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
         </nav>
         <!-- End Navbar -->
-        <div class="container-fluid py-4">
+        <div class="container-fluid py-41">
             <div class="row">
                 <div class="col-12">
                     <div class="card mb-4">
