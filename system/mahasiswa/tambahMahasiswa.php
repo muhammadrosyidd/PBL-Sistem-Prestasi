@@ -25,10 +25,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $role = 3;
 
     try {
-        // Membuat koneksi baru
-        $db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
-        $conn = $db->connect();
-
         // Mulai transaksi
         sqlsrv_begin_transaction($conn);
 

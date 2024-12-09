@@ -20,17 +20,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $alamat = $_POST['alamat'];
     $role = $_POST['role'];
 
-    // Encode password ke MD5 (hexadecimal 32 karakter)
-    $encoded_password = md5($password);
-    // Ubah MD5 hex ke binary untuk tipe VARBINARY di database
-    $encoded_password_bin = pack('H*', $encoded_password);
-
     // SQL untuk memasukkan data pengguna ke tabel [user]
-    $query_user = "INSERT INTO [user] (username, password, role) 
-                   VALUES (?, HASHBYTES('MD5', ?), ?)";
-
-    // Menyiapkan parameter untuk query user
-    $params_user = array($username, $encoded_password_bin, $role);
+    $query_user = "
+            INSERT INTO [user] (username, password, role) 
+            VALUES (?, CONVERT(VARBINARY(16), HASHBYTES('MD5', ?)), ?)";
+    $params_user = array($username, $password, $role);
 
     // Eksekusi query dengan prepared statement untuk tabel user
     $stmt_user = sqlsrv_query($conn, $query_user, $params_user);
@@ -172,14 +166,14 @@ ob_end_flush();
                                     <div class="col-md-12">
                                         <button type="submit" class="btn btn-warning">Submit</button>
                                     </div>
-                                    </form> 
-                                </div>
-                           
+                            </form>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     </div>

@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nama_admin = $_POST['nama_admin'];
     $jabatan = $_POST['jabatan'];
     $jenis_kelamin = $_POST['jenis_kelamin'];
-    $username = $_POST['username'];
+    $username = $_POST['username']; // Username tetap sama
     $password = $_POST['password'];
     $no_telepon = $_POST['no_telepon'];
     $alamat = $_POST['alamat'];
@@ -121,68 +121,68 @@ ob_end_flush();
 
                             </div>
                         </div>
-                <div class="card-body">
-                    <form action="" method="POST">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="nama_admin" class="form-control-label">Nama Admin</label>
-                                    <input class="form-control" type="text" name="nama_admin" value="<?php echo $nama_admin; ?>" required>
+                        <div class="card-body">
+                            <form action="" method="POST">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="nama_admin" class="form-control-label">Nama Admin</label>
+                                            <input class="form-control" type="text" name="nama_admin" value="<?php echo htmlspecialchars($nama_admin); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="jabatan" class="form-control-label">Jabatan</label>
+                                            <input class="form-control" type="text" name="jabatan" value="<?php echo htmlspecialchars($jabatan); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin</label>
+                                            <select class="form-control" name="jenis_kelamin" required>
+                                                <option value="L" <?php if ($jenis_kelamin == 'L') echo 'selected'; ?>>Laki-laki</option>
+                                                <option value="P" <?php if ($jenis_kelamin == 'P') echo 'selected'; ?>>Perempuan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="username" class="form-control-label">Username</label>
+                                            <input class="form-control" type="text" name="username" value="<?php echo htmlspecialchars($username); ?>" readonly required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="password" class="form-control-label">Password (Kosongkan jika tidak ingin mengubah)</label>
+                                            <input class="form-control" type="password" name="password">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="no_telepon" class="form-control-label">No Telepon</label>
+                                            <input class="form-control" type="text" name="no_telepon" value="<?php echo htmlspecialchars($no_telepon); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="alamat" class="form-control-label">Alamat</label>
+                                            <input class="form-control" type="text" name="alamat" value="<?php echo htmlspecialchars($alamat); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="role" class="form-control-label">Role</label>
+                                            <select class="form-control" name="role" required>
+                                                <option value="1" <?php if ($role == 1) echo 'selected'; ?>>1 - Super Admin</option>
+                                                <option value="2" <?php if ($role == 2) echo 'selected'; ?>>2 - Admin</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn btn-warning">Submit</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="jabatan" class="form-control-label">Jabatan</label>
-                                    <input class="form-control" type="text" name="jabatan" value="<?php echo $jabatan; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin</label>
-                                    <select class="form-control" name="jenis_kelamin" required>
-                                        <option value="L" <?php if ($jenis_kelamin == '1') echo 'selected'; ?>>Laki-laki</option>
-                                        <option value="P" <?php if ($jenis_kelamin == '2') echo 'selected'; ?>>Perempuan</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="username" class="form-control-label">Username</label>
-                                    <input class="form-control" type="text" name="username" value="<?php echo $username; ?>" readonly required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="password" class="form-control-label">Password (Kosongkan jika tidak ingin mengubah)</label>
-                                    <input class="form-control" type="password" name="password">
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="no_telepon" class="form-control-label">No Telepon</label>
-                                    <input class="form-control" type="text" name="no_telepon" value="<?php echo $no_telepon; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="alamat" class="form-control-label">Alamat</label>
-                                    <input class="form-control" type="text" name="alamat" value="<?php echo $alamat; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="role" class="form-control-label">Role</label>
-                                    <select class="form-control" name="role" required>
-                                        <option value="1" <?php if ($role == 1) echo 'selected'; ?>>1 - Super Admin</option>
-                                        <option value="2" <?php if ($role == 2) echo 'selected'; ?>>2 - Admin</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-warning">Submit</button>
-                            </div>
-                        </div>
-                    </form>
+                            </form>
                         </div>
                     </div>
                 </div>

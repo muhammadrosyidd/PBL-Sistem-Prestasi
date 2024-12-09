@@ -12,10 +12,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ubah MD5 hex ke binary untuk tipe VARBINARY
     $encoded_password_bin = pack('H*', $encoded_password);
 
-    // Buat koneksi database
-    $db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
-    $conn = $db->connect();
-
     if (!$conn) {
         die("Connection failed: " . print_r(sqlsrv_errors(), true));
     }
