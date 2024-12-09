@@ -1,42 +1,48 @@
 <?php
-// Include the DatabaseConnection class
+// Include file koneksi
 require_once __DIR__ . '/../../config/Connection.php';
-// Cek apakah form telah disubmit
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
 
-    // Encode password ke MD5 (dalam bentuk string)
-    $encoded_password = md5($password); // MD5 menghasilkan 32 karakter hexadecimal
+    // Encode password ke MD5 (hexadecimal)
+    $encoded_password = md5($password);
 
-    // Ubah MD5 ke dalam bentuk binary untuk disesuaikan dengan tipe VARBINARY
-    $encoded_password_bin = pack('H*', $encoded_password); // Konversi MD5 hex ke binary
+    // Ubah MD5 hex ke binary untuk tipe VARBINARY
+    $encoded_password_bin = pack('H*', $encoded_password);
+
+    // Buat koneksi database
+    $db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
+    $conn = $db->connect();
+
+    if (!$conn) {
+        die("Connection failed: " . print_r(sqlsrv_errors(), true));
+    }
 
     // Query untuk memeriksa username dan password
     $sql = "SELECT role FROM [user] WHERE username = ? AND password = ?";
-    $params = array($username, $encoded_password_bin); // Kirim password dalam bentuk binary
+    $params = array($username, $encoded_password_bin);
     $stmt = sqlsrv_query($conn, $sql, $params);
 
-    // Cek apakah ada hasil
     if ($stmt === false) {
-        die(print_r(sqlsrv_errors(), true));
+        die("Query failed: " . print_r(sqlsrv_errors(), true));
     }
 
     if (sqlsrv_has_rows($stmt)) {
-        // Ambil role dari hasil query
         $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
         $role = $row['role'];
 
         // Arahkan ke halaman sesuai role
         switch ($role) {
             case "1":
-                header("Location: ../../system/pageSuperAdmin/dashboard.html");
+                header("Location: ../../system/pageSuperAdmin/dashboard.php");
                 break;
             case "2":
-                header("Location: ../../Dashboard-Admin/pages-Admin/dashboard.html");
+                header("Location: ../../system/pageAdmin/dashboard.html");
                 break;
             case "3":
-                header("Location: ../../Dashboard-Mahasiswa/pages-Mahasiswa/dashboard.html");
+                header("Location: ../../system/mahasiswa/dashboard.html");
                 break;
             default:
                 echo "Role tidak dikenali.";

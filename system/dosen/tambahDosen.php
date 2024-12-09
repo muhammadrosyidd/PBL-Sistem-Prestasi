@@ -1,39 +1,6 @@
 <?php 
-$use_driver = 'sqlsrv'; // atau 'mysql'
-$host = "DAYDREAMER"; // 'localhost'
-$username = ''; // 'sa'
-$password = ''; 
-$database = 'PencatatanPrestasi'; 
-$db; 
-
-if ($use_driver == 'mysql') { 
-    try { 
-        $db = new mysqli('localhost', $username, $password, $database); 
-        
-        if ($db->connect_error) { 
-            die('Connection DB failed: ' . $db->connect_error); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
-} else if ($use_driver == 'sqlsrv') { 
-    $credential = [ 
-        'Database' => $database, 
-        'UID' => $username, 
-        'PWD' => $password 
-    ]; 
-    
-    try { 
-        $db = sqlsrv_connect($host, $credential); 
-        
-        if (!$db) { 
-            $msg = sqlsrv_errors(); 
-            die($msg[0]['message']); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
-}
+// Include file koneksi
+require_once __DIR__ . '/../../config/Connection.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
     $nidn = $_POST['nidn'];
@@ -43,23 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // SQL untuk memasukkan data
     $query = "INSERT INTO dosen (nidn, nama_dosen, telepon) VALUES ('$nidn', '$nama_dosen', '$telepon')";
 
-    if ($use_driver == 'mysql') {
-        if ($db->query($query) === TRUE) {
-            header("Location: dataDosen.php"); // Redirect ke dataDosen.php setelah berhasil
-            exit();
-        } else {
-            echo "Error: " . $db->error;
-        }
-    } else if ($use_driver == 'sqlsrv') {
-        $stmt = sqlsrv_query($db, $query);
-        if ($stmt) {
-            header("Location: dataDosen.php"); // Redirect ke dataDosen.php setelah berhasil
-            exit();
-        } else {
-            $msg = sqlsrv_errors();
-            echo "Error: " . $msg[0]['message'];
-        }
-    }
+   
 }
 ?>
 <!DOCTYPE html>
@@ -103,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </a>
     </div>
     <hr class="horizontal dark mt-0">
-    <div class="w-auto" id="sidenav-collapse-main">
+    <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="nav-link " href="../pages-SuperAdmin/dashboard.html">
@@ -115,25 +66,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.php">
+          <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.html">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1">Data Pengguna</span>
+            <span class="nav-link-text ms-1">Data Admin</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataDosen.php">
-            <div
-              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Dosen</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="../pages-SuperAdmin/dataDosen.php">
+          <a class="nav-link " href="../pages-SuperAdmin/dataDosen.html">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
@@ -142,7 +84,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.php">
+          <a class="nav-link active" href="../pages-SuperAdmin/dataDosen.html">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Data Dosen</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.html">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
@@ -160,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="informasiLomba.php">
+          <a class="nav-link " href="informasiLomba.html">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-app text-dark text-sm opacity-10"></i>
@@ -195,31 +146,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="card-header pb-0">
               <div class="d-flex align-items-center">
                 <p class="mb-0">Input Dosen</p>
+
               </div>
             </div>
             <div class="card-body">
               <!-- <p class="text-uppercase text-sm">User Information</p> -->
               <div class="row">
                 <div class="col-md-12">
-                  <form action="prosesDosen.php" method="POST">
-                    <div class="form-group">
-                        <label for="username">NIDN</label>
-                        <input class="form-control" type="text" name="nidn" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="username">Nama Dosen</label>
-                        <input class="form-control" type="text" name="nama_dosen" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="username">Nomor Telepon</label>
-                        <input class="form-control" type="text" name="telepon" required>
-                    </div>
+                  <div class="form-group">
+                    <label for="example-text-input" class="form-control-label">NIDN</label>
+                    <input class="form-control" type="text">
+                  </div>
                 </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="example-text-input" class="form-control-label">Nama Dosen</label>
+                    <input class="form-control" type="text">
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="example-text-input" class="form-control-label">No Telpon</label>
+                    <input class="form-control" type="text">
+
+                  </div>
+                </div>
+
               </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <button type="submit" class="btn btn-warning">Submit</button>
-                  </form>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <button class="btn btn-warning btn-sm ms-auto">Submit</button>
               </div>
             </div>
           </div>
