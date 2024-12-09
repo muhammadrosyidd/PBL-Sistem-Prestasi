@@ -252,8 +252,9 @@ ob_end_flush();
                                     <div class="col-md-12">
                                         <button type="submit" class="btn btn-warning">Submit</button>
                                     </div>
+                                    </form> 
                                 </div>
-                            </form>
+                           
                         </div>
                     </div>
                 </div>

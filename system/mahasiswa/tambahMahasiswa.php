@@ -1,69 +1,88 @@
-<?php 
-$use_driver = 'sqlsrv'; // atau 'mysql'
-$host = "DAYDREAMER"; // 'localhost'
-$username = ''; // 'sa'
-$password = ''; 
-$database = 'PencatatanPrestasi'; 
-$db; 
+<?php
+// Menampilkan semua error untuk debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-if ($use_driver == 'mysql') { 
-    try { 
-        $db = new mysqli('localhost', $username, $password, $database); 
-        
-        if ($db->connect_error) { 
-            die('Connection DB failed: ' . $db->connect_error); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
-} else if ($use_driver == 'sqlsrv') { 
-    $credential = [ 
-        'Database' => $database, 
-        'UID' => $username, 
-        'PWD' => $password 
-    ]; 
-    
-    try { 
-        $db = sqlsrv_connect($host, $credential); 
-        
-        if (!$db) { 
-            $msg = sqlsrv_errors(); 
-            die($msg[0]['message']); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
-}
+// Mulai output buffering
+ob_start();
+
+// Include file koneksi
+require_once __DIR__ . '/../../config/Connection.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
     $nim = $_POST['nim'];
     $username = $_POST['username'];
-    $nama = $_POST['nama'];
-    $jenis_kelamin = $_POST['jenis_kelamin'];
-    $program_studi = $_POST['program_studi'];
-    $angkatan = $_POST['angkatan'];
+    $password = $_POST['password'];
+    $nama_depan = $_POST['nama_depan'];
+    $nama_belakang = $_POST['nama_belakang'];
+    $jenis_kelamin = $_POST['jeniskelamin'];
+    $telepon = $_POST['telepon'];
+    $alamat = $_POST['alamat'];
+    $prodi_id = $_POST['prodi_id'];
 
-    // SQL untuk memasukkan data
-    $query = "INSERT INTO mahasiswa (nim, username, nama_mahasiswa, jenis_kelamin, program_studi, angkatan) VALUES ('$nim', '$username', '$nama', '$jenis_kelamin', '$program_studi', $angkatan)";
+    // Tetapkan role menjadi 3 (mahasiswa)
+    $role = 3;
 
-    if ($use_driver == 'mysql') {
-        if ($db->query($query) === TRUE) {
-            header("Location: dataMahasiswa.php"); // Redirect ke dataMahasiswa.php setelah berhasil
-            exit();
-        } else {
-            echo "Error: " . $db->error;
+    try {
+        // Membuat koneksi baru
+        $db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
+        $conn = $db->connect();
+
+        // Mulai transaksi
+        sqlsrv_begin_transaction($conn);
+
+        // Encode password ke MD5 (hexadecimal 32 karakter)
+        $encoded_password = md5($password);
+
+        // Ubah MD5 hex ke binary untuk tipe VARBINARY di database
+        $encoded_password_bin = pack('H*', $encoded_password);
+
+        // Query untuk memasukkan data ke tabel user
+        $query_user = "INSERT INTO [user] (username, password, role) 
+                   VALUES (?, HASHBYTES('MD5', ?), ?)";
+        $params_user = array($username, $encoded_password_bin, $role);
+
+        // Eksekusi query untuk tabel user
+        $stmt_user = sqlsrv_query($conn, $query_user, $params_user);
+        if ($stmt_user === false) {
+            throw new Exception("Error inserting user: " . print_r(sqlsrv_errors(), true));
         }
-    } else if ($use_driver == 'sqlsrv') {
-        $stmt = sqlsrv_query($db, $query);
-        if ($stmt) {
-            header("Location: dataMahasiswa.php"); // Redirect ke dataMahasiswa.php setelah berhasil
-            exit();
-        } else {
-            $msg = sqlsrv_errors();
-            echo "Error: " . $msg[0]['message'];
+
+        // Query untuk memasukkan data ke tabel mahasiswa
+        $query_mahasiswa = "INSERT INTO [mahasiswa] (nim, username, nama_depan, nama_belakang, jeniskelamin, telepon, alamat, prodi_id) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $params_mahasiswa = array($nim, $username, $nama_depan, $nama_belakang, $jenis_kelamin, $telepon, $alamat, $prodi_id);
+
+        $stmt_mahasiswa = sqlsrv_query($conn, $query_mahasiswa, $params_mahasiswa);
+        if ($stmt_mahasiswa === false) {
+            throw new Exception("Error inserting mahasiswa: " . print_r(sqlsrv_errors(), true));
+        }
+
+        // Commit transaksi jika semua query berhasil
+        sqlsrv_commit($conn);
+
+        // Redirect ke halaman dataMahasiswa.php setelah berhasil
+        header("Location: dataMahasiswa.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback jika terjadi error
+        if (isset($conn)) {
+            sqlsrv_rollback($conn);
+        }
+
+        // Tampilkan pesan error
+        echo "Error: " . $e->getMessage();
+    } finally {
+        // Pastikan koneksi ditutup
+        if (isset($db)) {
+            $db->close();
         }
     }
 }
+
+// Menyelesaikan output buffering
+ob_end_flush();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,8 +90,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/jti.png">
-  <link rel="icon" type="image/png" href="../assets/img/jti.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="../../assets2/img/jti.png">
+  <link rel="icon" type="image/png" href="../../assets2/img/jti.png">
   <title>
     Input Mahasiswa
   </title>
@@ -85,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <!-- CSS Files -->
-  <link id="pagestyle" href="../assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
+  <link id="pagestyle" href="../../assets2/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -101,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html "
         target="_blank">
-        <img src="../assets/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
+        <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
       </a>
     </div>
@@ -174,17 +193,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       </ul>
     </div>
-    
+
   </aside>
   <div class="main-content position-relative max-height-vh-100 h-100">
     <!-- Navbar -->
     <nav
       class="navbar navbar-main navbar-expand-lg bg-transparent shadow-none position-absolute px-4 w-100 z-index-2 mt-n11">
-      
+
     </nav>
     <!-- End Navbar -->
     <div class="card shadow-lg mx-4 card-profile-bottom">
-      
+
     </div>
     <div class="container-fluid py-4">
       <div class="row">
@@ -199,48 +218,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               <!-- <p class="text-uppercase text-sm">User Information</p> -->
               <div class="row">
                 <div class="col-md-12">
-                  <form action="prosesMahasiswa.php" method="POST">
+                  <form action="" method="POST">
                     <div class="form-group">
-                        <label for="nim">NIM Mahasiswa</label>
-                        <input class="form-control" type="text" name="nim" required>
+                      <label for="nim">NIM Mahasiswa</label>
+                      <input class="form-control" type="text" name="nim" required>
                     </div>
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input class="form-control" type="text" name="username" required>
+                      <label for="username">Username</label>
+                      <input class="form-control" type="text" name="username" required>
                     </div>
                     <div class="form-group">
-                        <label for="nama">Nama Mahasiswa</label>
-                        <input class="form-control" type="text" name="nama" required>
+                      <label for="password">Password</label>
+                      <input class="form-control" type="text" name="password" required>
                     </div>
                     <div class="form-group">
-                        <label for="jenis_kelamin">Jenis Kelamin</label>
-                        <select class="form-control" name="jenis_kelamin" required>
-                            <option value="Laki-laki">Laki-laki</option>
-                            <option value="Perempuan">Perempuan</option>
-                        </select>
+                      <label for="nama_depan">Nama Depan</label>
+                      <input class="form-control" type="text" name="nama_depan" required>
                     </div>
                     <div class="form-group">
-                        <label for="program_studi">Program Studi</label>
-                        <select class="form-control" name="program_studi" required>
-                            <option value="D4 Teknik Informatika">D4 Teknik Informatika</option>
-                            <option value="D4 Sistem Informasi Bisnis">D4 Sistem Informasi Bisnis</option>
-                            <option value="D2 Pengembangan Piranti Lunak Situs">D2 Pengembangan Piranti Lunak Situs</option>
-                        </select>
+                      <label for="nama_belakang">Nama Belakang</label>
+                      <input class="form-control" type="text" name="nama_belakang" required>
                     </div>
                     <div class="form-group">
-                        <label for="angkatan">Angkatan</label>
-                        <input class="form-control" type="number" name="angkatan" required>
+                      <label for="jeniskelamin">Jenis Kelamin</label>
+                      <select class="form-control" name="jeniskelamin" required>
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="telepon">No Telepon</label>
+                      <input class="form-control" type="number" name="telepon" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="alamat">Alamat</label>
+                      <input class="form-control" type="text" name="alamat" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="prodi_id">Program Studi</label>
+                      <select class="form-control" name="prodi_id" required>
+                        <option value="1">D4 Teknik Informatika</option>
+                        <option value="2">D4 Sistem Informasi Bisnis</option>
+                        <option value="3">D2 Pengembangan Piranti Lunak Situs</option>
+                      </select>
                     </div>
                     <button type="submit" class="btn btn-warning btn-sm">Submit</button>
-                </form>            
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
     </div>
-    
-  </div>
   </div>
 
   <!--   Core JS Files   -->
@@ -304,10 +335,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       }
     }
   </script>
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="../../assets2/js/core/popper.min.js"></script>
+  <script src="../../assets2/js/core/bootstrap.min.js"></script>
+  <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../../assets2/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -320,7 +351,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-  <script src="../assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+  <script src="../../assets2/js/argon-dashboard.min.js?v=2.1.0"></script>
 </body>
 
 </html>
