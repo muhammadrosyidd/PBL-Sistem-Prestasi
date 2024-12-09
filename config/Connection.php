@@ -44,6 +44,6 @@ class Connection {
 }
 
 // Create a new instance of DatabaseConnection and connect
-$db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
+$db = new Connection("DESKTOP-IVR2LTO", "", "", "PRESTASI");
 $conn = $db->connect();
 ?>
