@@ -97,7 +97,7 @@
       <li class="nav-item">
         <a
           class="nav-link <?= isActive(['dataPrestasi.php', 'tambahPrestasi.php', 'editPrestasi.php']); ?>"
-          href="../pages-SuperAdmin/dataPrestasi.html"
+          href="../prestasi/dataPrestasi.php"
         >
           <div
             class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
