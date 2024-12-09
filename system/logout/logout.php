@@ -1,6 +1,6 @@
 <?php
 // Include file koneksi
-require_once __DIR__ . '/../../config/Connection.php'; // Pastikan path ini benar
+require_once __DIR__ . '/../../config/Connection.php';
 
 session_start(); // Mulai sesi
 
@@ -36,6 +36,6 @@ session_unset();
 session_destroy();
 
 // Arahkan ke halaman login
-header('Location: Sign-in/Pages-Sign-in/Sign-in.php');
+header('Location: /PBL-SISTEM-PRESTASI/freebie.html');
 exit;
 ?>

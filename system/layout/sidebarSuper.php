@@ -125,6 +125,17 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 1) {
                         <span class="nav-link-text ms-1">Laporan</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link <?= isActive('logout.php'); ?>"
+                        href="../logout/logout.php">
+                        <div
+                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                            <i class="ni ni-send text-dark text-sm opacity-10"></i>
+                        </div>
+                        <span class="nav-link-text ms-1">Log Out</span>
+                    </a>
+                </li>
             <?php endif; ?>
         </ul>
     </div>
