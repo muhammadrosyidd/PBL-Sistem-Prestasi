@@ -1,7 +1,5 @@
-
-
-<?php 
-require_once __DIR__ . '/../../config/Connection.php'; 
+<?php
+require_once __DIR__ . '/../../config/Connection.php';
 
 $query = "SELECT 
     m.nim, 
@@ -21,7 +19,7 @@ JOIN
 $result = sqlsrv_query($conn, $query);
 
 if ($result === false) {
-    die(print_r(sqlsrv_errors(), true));
+  die(print_r(sqlsrv_errors(), true));
 }
 
 
@@ -53,13 +51,13 @@ if ($result === false) {
 <body class="g-sidenav-show   bg-gray-100">
   <div class="min-height-300 bg-gradient-warning position-absolute w-100"></div>
   <?php
-    include_once __DIR__ . '/../layout/sidebarSuper.php';
-    ?>
+  include_once __DIR__ . '/../layout/sidebarSuper.php';
+  ?>
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur"
       data-scroll="false">
-      
+
     </nav>
     <!-- End Navbar -->
     <div class="container-fluid py-41">
@@ -73,22 +71,22 @@ if ($result === false) {
             </div>
             <div class="card-body px-0 pt-0 pb-2">
               <div class="table-responsive p-0">
-                  <table class="table align-items-center mb-0">
-                    <thead>
-                        <tr>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NIM</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USERNAME</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NAMA DEPAN</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NAMA BELAKANG</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PROGRAM STUDI</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">JENIS KELAMIN</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO TELEPON</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ALAMAT</th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <table class="table align-items-center mb-0">
+                  <thead>
+                    <tr>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NIM</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USERNAME</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NAMA DEPAN</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NAMA BELAKANG</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PROGRAM STUDI</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">JENIS KELAMIN</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">NO TELEPON</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ALAMAT</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">AKSI</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     <?php
                     $no = 1; // Inisialisasi nomor urut
 
@@ -97,7 +95,7 @@ if ($result === false) {
                       // $password_length = strlen($row['password']); 
                       // $masked_password = str_repeat('*', $password_length); // Masking password sesuai panjang asli
 
-                        echo "<tr>
+                      echo "<tr>
                                 <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
                                 <td class='text-center text-xs font-weight-bold mb-0'>" . htmlspecialchars($row['nim']) . "</td>
                                 <td class='text-center text-xs font-weight-bold mb-0'>" . htmlspecialchars($row['username']) . "</td>
@@ -118,7 +116,7 @@ if ($result === false) {
                                     </form>
                                 </td>
                               </tr>";
-                        $no++;
+                      $no++;
                     }
                     ?>
                   </tbody>
@@ -130,14 +128,17 @@ if ($result === false) {
       </div>
     </div>
   </main>
-  
+
   <!--   Core JS Files   -->
   <script src="../../assets2/js/core/popper.min.js"></script>
   <script src="../../assets2/js/core/bootstrap.min.js"></script>
   <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../../assets2/js/plugins/smooth-scrollbar.min.js"></script>
+
   <script>
-    return confirm("Apakah Anda yakin ingin menghapus data ini?");
+    function confirmDelete() {
+      return confirm("Apakah Anda yakin ingin menghapus Mahasiswa ini?");
+    }
   </script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
@@ -153,6 +154,7 @@ if ($result === false) {
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../../assets2/js/argon-dashboard.min.js?v=2.1.0"></script>
 </body>
+
 </html>
 <?php
 // Menutup koneksi

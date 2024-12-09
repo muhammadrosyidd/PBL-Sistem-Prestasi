@@ -1,4 +1,6 @@
 <?php
+session_start(); // Mulai sesi
+
 // Include file koneksi
 require_once __DIR__ . '/../../config/Connection.php';
 
@@ -33,13 +35,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
         $role = $row['role'];
 
+        // Simpan role dalam session
+        $_SESSION['role'] = $role; 
+
         // Arahkan ke halaman sesuai role
         switch ($role) {
             case "1":
                 header("Location: ../../system/pageSuperAdmin/dashboard.php");
                 break;
             case "2":
-                header("Location: ../../system/pageAdmin/dashboard.html");
+                header("Location: ../../system/pageAdmin/dashboard.php");
                 break;
             case "3":
                 header("Location: ../../system/mahasiswa/dashboard.html");
