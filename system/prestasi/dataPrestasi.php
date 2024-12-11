@@ -1,35 +1,12 @@
 <?php
-$use_driver = 'sqlsrv'; // mysql atau sqlsrv 
-$host = "DAYDREAMER"; //'localhost'; 
-$username = ''; //'sa'; 
-$password = ''; 
-$database = 'PencatatanPrestasi'; 
-$db; 
-
-if ($use_driver == 'sqlsrv') { 
-    $credential = [ 
-        'Database' => $database, 
-        'UID' => $username, 
-        'PWD' => $password 
-    ]; 
-    
-    try { 
-        $db = sqlsrv_connect($host, $credential); 
-        
-        if (!$db) { 
-            die("Connection failed: " . sqlsrv_errors()[0]['message']); 
-        } 
-    } catch (Exception $e) { 
-        die($e->getMessage()); 
-    } 
-}
+require_once __DIR__ . '/../../config/Connection.php';
 
 // Fetch data from the prestasi table
-$sql = "SELECT * FROM prestasi";
-$stmt = sqlsrv_query($db, $sql);
+$query = "SELECT * FROM prestasi";
+$result = sqlsrv_query($conn, $query);
 
-if ($stmt === false) {
-    die(print_r(sqlsrv_errors(), true));
+if ($result === false) {
+  die(print_r(sqlsrv_errors(), true));
 }
 ?>
 
@@ -39,28 +16,28 @@ if ($stmt === false) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="../assets/img/jti.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="../../assets2/img/apple-icon.png">
+  <link rel="icon" type="image/png" href="../../assets2/img/jti.png">
   <title>Data Prestasi</title>
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
   <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-svg.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link id="pagestyle" href="../assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
+  <link id="pagestyle" href="../../assets2/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
   <style>
     ::-webkit-scrollbar {
-            display: none;
-        }
+      display: none;
+    }
   </style>
   <div class="min-height-300 bg-gradient-warning position-absolute w-100"></div>
   <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 " id="sidenav-main">
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand m-0" href="https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html" target="_blank">
-        <img src="../assets/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
+        <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
       </a>
     </div>
@@ -153,47 +130,59 @@ if ($stmt === false) {
                   <tbody>
                     <?php
                     $no = 1;
-                    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)): ?>
-                    <tr>
+                    while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)):
+                      // Ensure 'id' is replaced with 'prestasi_id'
+                      $prestasi_id = $row['prestasi_id']; // Assuming 'prestasi_id' is the correct column name
+
+                      // Format dates correctly, considering both string and DateTime types
+                      $tanggal_mulai = isset($row['tanggal_mulai']) && $row['tanggal_mulai'] !== null ? (is_a($row['tanggal_mulai'], 'DateTime') ? $row['tanggal_mulai']->format('d-m-Y') : (new DateTime($row['tanggal_mulai']))->format('d-m-Y')) : '';
+                      $tanggal_akhir = isset($row['tanggal_akhir']) && $row['tanggal_akhir'] !== null ? (is_a($row['tanggal_akhir'], 'DateTime') ? $row['tanggal_akhir']->format('d-m-Y') : (new DateTime($row['tanggal_akhir']))->format('d-m-Y')) : '';
+                      $tanggal_surat_tugas = isset($row['tanggal_surat_tugas']) && $row['tanggal_surat_tugas'] !== null ? (is_a($row['tanggal_surat_tugas'], 'DateTime') ? $row['tanggal_surat_tugas']->format('d-m-Y') : (new DateTime($row['tanggal_surat_tugas']))->format('d-m-Y')) : '';
+
+                    ?>
+                      <tr>
                         <td class="text-center text-xxs font-weight-bold mb-0"><?php echo $no; ?></td>
                         <td class="text-center">
-                            <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($row['judul_kompetisi'] ?? ''); ?></span>
+                          <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($row['judul'] ?? ''); ?></span>
                         </td>
                         <td class="text-center">
-                            <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($row['tanggal_mulai'] ? $row['tanggal_mulai']->format('d-m-Y') : ''); ?></span>
+                          <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($tanggal_mulai ?? ''); ?></span>
                         </td>
                         <td class="text-center">
-                            <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($row['tingkat_kompetisi'] ?? ''); ?></span>
+                          <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($row['tingkat_lomba_id'] ?? ''); ?></span>
                         </td>
                         <td class="text-center">
-                            <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($row['status_prestasi'] ?? ''); ?></span>
+                          <span class="text-xs font-weight-bold mb-0"><?php echo htmlspecialchars($row['verifikasi_status'] ?? ''); ?></span>
                         </td>
                         <td class="align-middle text-center text-sm">
-                            <button class="btn bg-gradient-primary mt-0 mb-0" onclick="toggleDetails(<?php echo $row['id']; ?>)">Detail</button>
+                          <button class="btn bg-gradient-primary mt-0 mb-0" onclick="toggleDetails(<?php echo $prestasi_id; ?>)">Detail</button>
                         </td>
-                    </tr>
-                    <tr id="details-<?php echo $row['id']; ?>" class="details" style="display: none;">
-                        <td colspan="6" style="padding: 1rem; font-size : 12px;">
-                            <strong>Detail Prestasi:</strong><br>
-                            <b>Tingkat:</b> <?php echo htmlspecialchars($row['tingkat_kompetisi'] ?? ''); ?><br>
-                            <b>Link Kompetisi:</b> <a href="<?php echo htmlspecialchars($row['link_kompetisi'] ?? ''); ?>"><?php echo htmlspecialchars($row['link_kompetisi'] ?? ''); ?></a><br>
-                            <b>Tanggal Mulai:</b> <?php echo htmlspecialchars($row['tanggal_mulai'] ? $row['tanggal_mulai']->format('d-m-Y') : ''); ?><br>
-                            <b>Tanggal Akhir:</b> <?php echo htmlspecialchars($row['tanggal_akhir'] ? $row['tanggal_akhir']->format('d-m-Y') : ''); ?><br>
-                            <b>Tempat:</b> <?php echo htmlspecialchars($row['tempat_kompetisi'] ?? ''); ?><br>
-                            <b>Jumlah Peserta:</b> <?php echo htmlspecialchars($row['jumlah_peserta'] ?? ''); ?><br>
-                            <b>Peringkat Juara:</b> <?php echo htmlspecialchars($row['peringkat_juara'] ?? ''); ?><br>
-                            <b>Surat Tugas:</b><br>
-                            <span>No: <?php echo htmlspecialchars($row['no_surat_tugas'] ?? ''); ?></span><br>
-                            <span>Tanggal: <?php echo htmlspecialchars($row['tanggal_surat_tugas'] ? $row['tanggal_surat_tugas']->format('d-m-Y') : ''); ?></span><br>
-                            <b>Pembimbing:</b><br>
-                            <?php echo htmlspecialchars($row['nama_dosen'] ?? ''); ?><br>
-                            <button class="btn bg-gradient-warning">Verifikasi</button>
+                      </tr>
+                      <tr id="details-<?php echo htmlspecialchars($prestasi_id); ?>" class="details" style="display: none;">
+                        <td colspan="6" style="padding: 1rem; font-size: 12px;">
+                          <strong>Detail Prestasi:</strong><br>
+                          <b>Tingkat:</b> <?php echo htmlspecialchars($row['tingkat_lomba_id'] ?? ''); ?><br>
+                          <b>Link Kompetisi:</b> <a href="<?php echo htmlspecialchars($row['link_kompetisi'] ?? ''); ?>"><?php echo htmlspecialchars($row['link_kompetisi'] ?? ''); ?></a><br>
+                          <b>Tanggal Mulai:</b> <?php echo htmlspecialchars($tanggal_mulai ?? ''); ?><br>
+                          <b>Tanggal Akhir:</b> <?php echo htmlspecialchars($tanggal_akhir ?? ''); ?><br>
+                          <b>Tempat:</b> <?php echo htmlspecialchars($row['tempat_kompetisi'] ?? ''); ?><br>
+                          <b>Jumlah Peserta:</b> <?php echo htmlspecialchars($row['jumlah_peserta'] ?? ''); ?><br>
+                          <b>Peringkat Juara:</b> <?php echo htmlspecialchars($row['peringkat_juara'] ?? ''); ?><br>
+                          <b>Surat Tugas:</b><br>
+                          <span>No: <?php echo htmlspecialchars($row['no_surat_tugas'] ?? ''); ?></span><br>
+                          <span>Tanggal: <?php echo htmlspecialchars($tanggal_surat_tugas ?? ''); ?></span><br>
+                          <b>Pembimbing:</b><br>
+                          <?php echo htmlspecialchars($row['nama_dosen'] ?? ''); ?><br>
+                          <button class="btn bg-gradient-warning">Verifikasi</button>
                         </td>
-                    </tr>
+                      </tr>
                     <?php
-                    $no++; ?>
-                    <?php endwhile; ?>
-                </tbody>
+                      $no++;
+                    endwhile;
+                    ?>
+
+
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -203,19 +192,19 @@ if ($stmt === false) {
     </div>
   </main>
   <script>
-  function toggleDetails(id) {
+    function toggleDetails(id) {
       var detailsRow = document.getElementById("details-" + id);
       if (detailsRow.style.display === "none") {
-          detailsRow.style.display = "table-row"; // Show the details row
+        detailsRow.style.display = "table-row"; // Show the details row
       } else {
-          detailsRow.style.display = "none"; // Hide the details row
+        detailsRow.style.display = "none"; // Hide the details row
       }
-  }
+    }
   </script>
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="../../assets2/js/core/popper.min.js"></script>
+  <script src="../../assets2/js/core/bootstrap.min.js"></script>
+  <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../../assets2/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -226,7 +215,7 @@ if ($stmt === false) {
     }
   </script>
   <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <script src="../assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+  <script src="../../assets2/js/argon-dashboard.min.js?v=2.1.0"></script>
 </body>
 
 </html>

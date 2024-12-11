@@ -1,61 +1,38 @@
 <?php
-session_start(); // Mulai sesi
-
-// Include file koneksi
 require_once __DIR__ . '/../../config/Connection.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+abstract class AbstractLogin {
+    protected $conn;
 
-    // Encode password ke MD5 (hexadecimal)
-    $encoded_password = md5($password);
-
-    // Ubah MD5 hex ke binary untuk tipe VARBINARY
-    $encoded_password_bin = pack('H*', $encoded_password);
-
-    if (!$conn) {
-        die("Connection failed: " . print_r(sqlsrv_errors(), true));
+    public function __construct($connection) {
+        $this->conn = $connection->getConnection();
     }
 
-    // Query untuk memeriksa username dan password
-    $sql = "SELECT role FROM [user] WHERE username = ? AND password = ?";
-    $params = array($username, $encoded_password_bin);
-    $stmt = sqlsrv_query($conn, $sql, $params);
+    abstract public function authenticate($username, $password);
+}
 
-    if ($stmt === false) {
-        die("Query failed: " . print_r(sqlsrv_errors(), true));
-    }
+class Login extends AbstractLogin {
+    public function authenticate($username, $password) {
+        $encoded_password = md5($password); // Encode password to MD5
+        $encoded_password_bin = pack('H*', $encoded_password); // Convert MD5 hex to binary
 
-    if (sqlsrv_has_rows($stmt)) {
-        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-        $role = $row['role'];
+        $sql = "SELECT role FROM [user] WHERE username = ? AND password = ?";
+        $params = array(trim($username), $encoded_password_bin);
 
-        // Simpan role dalam session
-        $_SESSION['role'] = $role; 
+        $stmt = sqlsrv_query($this->conn, $sql, $params);
 
-        // Arahkan ke halaman sesuai role
-        switch ($role) {
-            case "1":
-                header("Location: ../../system/pageSuperAdmin/dashboard.php");
-                break;
-            case "2":
-                header("Location: ../../system/pageAdmin/dashboard.php");
-                break;
-            case "3":
-                header("Location: ../../system/mahasiswa/dashboard.html");
-                break;
-            default:
-                echo "Role tidak dikenali.";
-                break;
+        if ($stmt === false) {
+            die("Query failed: " . print_r(sqlsrv_errors(), true));
         }
-        exit();
-    } else {
-        echo "Username atau password salah.";
+
+        if (sqlsrv_has_rows($stmt)) {
+            $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+            return $row['role'];
+        }
+        return null;
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -98,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   <p class="mb-0">Masukkan username dan password anda </p>
                 </div>
                 <div class="card-body">
-                  <form method="POST" action="">
+                  <form method="POST" action="LoginProcess.php">
                       <div class="mb-3">
                           <input type="text" name="username" class="form-control" placeholder="Username" required>
                       </div>

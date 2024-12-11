@@ -1,11 +1,110 @@
+<?php
+require_once __DIR__ . '/../../config/Connection.php';
+
+// Memeriksa apakah data POST ada
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Data untuk tabel prestasi
+    $nimMahasiswa = $_POST['nimMahasiswa'];
+    $peran = $_POST['peran'];
+    $judulKompetisi = $_POST['judulKompetisi'];
+    $tempatKompetisi = $_POST['tempatKompetisi'];
+    $tingkatKompetisi = $_POST['tingkatKompetisi'];
+    $linkKompetisi = $_POST['linkKompetisi'];
+    $jumlahPeserta = $_POST['jumlahPeserta'];
+    $peringkatJuara = $_POST['peringkatJuara'];
+    $tanggalMulai = $_POST['tanggalMulai'];
+    $tanggalAkhir = $_POST['tanggalAkhir'];
+    $noSuratTugas = $_POST['noSuratTugas'];
+    $tanggalSuratTugas = $_POST['tanggalSuratTugas'];
+
+    // Data untuk Mahasiswa dan Pembimbing
+    $mahasiswa = isset($_POST['mahasiswa']) ? $_POST['mahasiswa'] : [];
+    $peranMahasiswa = isset($_POST['peran']) ? $_POST['peran'] : [];
+    $pembimbing = isset($_POST['pembimbing']) ? $_POST['pembimbing'] : [];
+    $peranPembimbing = isset($_POST['pembimbing_peran']) ? $_POST['pembimbing_peran'] : [];
+
+    // Mengatur file upload
+    $uploadDir = 'uploads/';
+    
+    // Inisialisasi variabel file
+    $fileSuratTugasName = null;
+    $fileSertifikatName = null;
+    $fotoKegiatanName = null;
+
+    // Memeriksa dan mengupload file jika ada
+    if (isset($_FILES['fileSuratTugas']) && $_FILES['fileSuratTugas']['error'] == 0) {
+        $fileSuratTugasName = $uploadDir . basename($_FILES['fileSuratTugas']['name']);
+        move_uploaded_file($_FILES['fileSuratTugas']['tmp_name'], $fileSuratTugasName);
+    }
+
+    if (isset($_FILES['fileSertifikat']) && $_FILES['fileSertifikat']['error'] == 0) {
+        $fileSertifikatName = $uploadDir . basename($_FILES['fileSertifikat']['name']);
+        move_uploaded_file($_FILES['fileSertifikat']['tmp_name'], $fileSertifikatName);
+    }
+
+    if (isset($_FILES['fotoKegiatan']) && $_FILES['fotoKegiatan']['error'] == 0) {
+        $fotoKegiatanName = $uploadDir . basename($_FILES['fotoKegiatan']['name']);
+        move_uploaded_file($_FILES['fotoKegiatan']['tmp_name'], $fotoKegiatanName);
+    }
+
+    // Pastikan koneksi database valid
+    $conn = (new Connection("DESKTOP-IVR2LTO", "", "", "PRESTASI"))->connect();
+
+    if ($conn) {
+        // Query untuk menyimpan data prestasi ke database
+        $queryPrestasi = "INSERT INTO prestasi (nim_mahasiswa, peran, judul_kompetisi, tempat_kompetisi, tingkat_kompetisi, link_kompetisi, jumlah_peserta, peringkat_juara, tanggal_mulai, tanggal_akhir, no_surat_tugas, tanggal_surat_tugas, file_surat_tugas, file_sertifikat, foto_kegiatan) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        // Persiapkan statement
+        $stmtPrestasi = sqlsrv_prepare($conn, $queryPrestasi, [
+            &$nimMahasiswa, &$peran, &$judulKompetisi, &$tempatKompetisi, &$tingkatKompetisi, &$linkKompetisi,
+            &$jumlahPeserta, &$peringkatJuara, &$tanggalMulai, &$tanggalAkhir, &$noSuratTugas, &$tanggalSuratTugas,
+            &$fileSuratTugasName, &$fileSertifikatName, &$fotoKegiatanName
+        ]);
+
+        // Eksekusi query untuk prestasi
+        if (sqlsrv_execute($stmtPrestasi)) {
+            // Jika prestasi berhasil dimasukkan, simpan data Mahasiswa dan Pembimbing
+            $prestasiId = sqlsrv_insert_id($conn); // ID dari prestasi yang baru disimpan
+
+            // Menyimpan data mahasiswa terkait prestasi
+            if (!empty($mahasiswa)) {
+                foreach ($mahasiswa as $index => $mhs) {
+                    $queryMahasiswa = "INSERT INTO mahasiswa_prestasi (prestasi_id, mahasiswa_id, peran) VALUES (?, ?, ?)";
+                    $stmtMahasiswa = sqlsrv_prepare($conn, $queryMahasiswa, [
+                        &$prestasiId, &$mhs, &$peranMahasiswa[$index]
+                    ]);
+                    sqlsrv_execute($stmtMahasiswa);
+                }
+            }
+
+            // Menyimpan data pembimbing terkait prestasi
+            if (!empty($pembimbing)) {
+                foreach ($pembimbing as $index => $bimbing) {
+                    $queryPembimbing = "INSERT INTO pembimbing_prestasi (prestasi_id, pembimbing_id, peran) VALUES (?, ?, ?)";
+                    $stmtPembimbing = sqlsrv_prepare($conn, $queryPembimbing, [
+                        &$prestasiId, &$bimbing, &$peranPembimbing[$index]
+                    ]);
+                    sqlsrv_execute($stmtPembimbing);
+                }
+            }
+
+            // Redirect atau beri pesan sukses
+            echo "Prestasi berhasil disimpan!";
+        } 
+    } else {
+        echo "Error: Database connection failed.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/jti.png">
-  <link rel="icon" type="image/png" href="../assets/img/jti.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="../../assets2/img/jti.png">
+  <link rel="icon" type="image/png" href="../../assets2/img/jti.png">
   <title>
     Input Prestasi
   </title>
@@ -13,9 +112,9 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
   <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-svg.css" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/tambahmhs.css">
+  <link rel="stylesheet" href="../../assets2/css/tambahmhs.css">
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link id="pagestyle" href="../assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
+  <link id="pagestyle" href="../../assets2/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -26,7 +125,7 @@
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html " target="_blank">
-        <img src="../assets/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
+        <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
       </a>
     </div>
@@ -104,7 +203,7 @@
               </div>
             </div>
             <div class="card-body">
-              <form action="prosesPrestasi.php" method="POST" enctype="multipart/form-data">
+              <form action="" method="POST">
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
@@ -407,10 +506,10 @@
       }
     }
   </script>
-  <script src="../assets/js/core/popper.min.js"></script>
-  <script src="../assets/js/core/bootstrap.min.js"></script>
-  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="../../assets2/js/core/popper.min.js"></script>
+  <script src="../../assets2/js/core/bootstrap.min.js"></script>
+  <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../../assets2/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -421,6 +520,6 @@
     }
   </script>
   <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <script src="../assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+  <script src="../../assets2/js/argon-dashboard.min.js?v=2.1.0"></script>
 </body>
 </html>
