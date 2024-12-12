@@ -10,7 +10,7 @@ GO
 CREATE TABLE [user] ( 
     username VARCHAR(20) PRIMARY KEY, 
     password VARBINARY(20) NOT NULL, 
-    role INT NOT NULL, 
+    role INT NOT NULL 
 );
 
 --TABEL SUPERADMIN--
@@ -51,7 +51,6 @@ CREATE TABLE [dosen] (
     telepon VARCHAR(15) 
 );
 
-
 --table mahasiswa
 CREATE TABLE [mahasiswa] (
     nim VARCHAR(20) PRIMARY KEY,   
@@ -72,11 +71,10 @@ CREATE TABLE [kategori] (
     nama_kategori VARCHAR(50) NOT NULL
 );
 
-
 --table tingkat lomba--
 CREATE TABLE [tingkatLomba] (
     tingkat_lomba_id INT PRIMARY KEY IDENTITY(1,1), 
-    nama_tingkat VARCHAR(20) NOT NULL
+    nama_tingkat VARCHAR(20) NOT NULL,
 	poin_tingkat INT NOT NULL
 );
 
@@ -99,6 +97,14 @@ CREATE TABLE [dokumen] (
     komentar VARCHAR(MAX) NULL
 );
 
+-- Ubah kolom nomor_surat_tugas menjadi NOT NULL
+ALTER TABLE dokumen
+ALTER COLUMN nomor_surat_tugas VARCHAR(50) NOT NULL;
+
+-- Tambahkan kolom tanggal_surat dengan tipe DATE dan NOT NULL
+ALTER TABLE [dokumen]
+ADD tanggal_surat_tugas DATE DEFAULT GETDATE();
+
 -- Membuat tabel peran mahasiswa
 CREATE TABLE [peran_mahasiswa] (
     peran_mahasiswa_id INT PRIMARY KEY IDENTITY(1,1),
@@ -114,9 +120,9 @@ CREATE TABLE [peran_dosen] (
 --table prestasi--
 CREATE TABLE [prestasi] (
     prestasi_id INT PRIMARY KEY IDENTITY(1,1), 
-    nim VARCHAR(20) NOT NULL, 
-	dosen_id INT NULL,
     judul VARCHAR(255) NOT NULL,  
+	tempat VARCHAR (255) NOT NULL,
+	link_kompetisi VARCHAR (255) NOT NULL,
     tanggal_mulai DATE NOT NULL, 
 	tanggal_akhir DATE NOT NULL,
 	jumlah_peserta VARCHAR(50),
@@ -124,17 +130,11 @@ CREATE TABLE [prestasi] (
     tingkat_lomba_id INT NOT NULL, 
     peringkat_id INT NOT NULL, 
     dokumen_id INT NULL, 
-	peran_mahasiswa_id INT NOT NULL,
-	peran_dosen_id INT NOT NULL,
 	verifikasi_status VARCHAR(20) DEFAULT 'Belum Terverifikasi',
-    FOREIGN KEY (nim) REFERENCES [mahasiswa](nim), 
-	FOREIGN KEY (dosen_id) REFERENCES [dosen](dosen_id),
     FOREIGN KEY (kategori_id) REFERENCES [kategori](kategori_id), 
     FOREIGN KEY (tingkat_lomba_id) REFERENCES [tingkatLomba](tingkat_lomba_id), 
     FOREIGN KEY (peringkat_id) REFERENCES [peringkat](peringkat_id), 
-    FOREIGN KEY (dokumen_id) REFERENCES [dokumen](dokumen_id),
-	FOREIGN KEY (peran_mahasiswa_id) REFERENCES [peran_mahasiswa](peran_mahasiswa_id),
-	FOREIGN KEY (peran_dosen_id) REFERENCES [peran_dosen](peran_dosen_id)
+    FOREIGN KEY (dokumen_id) REFERENCES [dokumen](dokumen_id)
 );
 
 CREATE TABLE infolomba (
@@ -146,6 +146,26 @@ CREATE TABLE infolomba (
     link_pendaftaran VARCHAR(255) NOT NULL,
     penyelenggara VARCHAR(100) NOT NULL,
     CONSTRAINT FK_tingkatLomba FOREIGN KEY (tingkat_lomba_id) REFERENCES tingkatLomba(tingkat_lomba_id)
+);
+
+CREATE TABLE [presma] (
+	presma_id INT PRIMARY KEY IDENTITY (1,1),
+	nim VARCHAR (20) NOT NULL,
+	prestasi_id INT NOT NULL,
+	peran_mahasiswa_id INT NOT NULL,
+	FOREIGN KEY (nim) REFERENCES[mahasiswa](nim),
+	FOREIGN KEY (prestasi_id) REFERENCES[prestasi](prestasi_id),
+	FOREIGN KEY (peran_mahasiswa_id) REFERENCES[peran_mahasiswa](peran_mahasiswa_id)
+);
+
+CREATE TABLE [dospem] (
+	dospem_id INT PRIMARY KEY IDENTITY (1,1),
+	dosen_id INT NOT NULL,
+	prestasi_id INT NOT NULL,
+	peran_dosen_id INT NOT NULL,
+	FOREIGN KEY (dosen_id) REFERENCES[dosen](dosen_id),
+	FOREIGN KEY (prestasi_id) REFERENCES[prestasi](prestasi_id),
+	FOREIGN KEY (peran_dosen_id) REFERENCES[peran_dosen](peran_dosen_id)
 );
 
 GO
@@ -239,11 +259,20 @@ INSERT INTO [peran_dosen] (nama_peran) VALUES
 ('Membimbing mahasiswa mengikuti kompetisi di bidang akademik dan kemahasiswaan bereputasi dan mencapai juara tingkat Nasional');
 
 -- Mengisi data dummy ke tabel prestasi
-INSERT INTO [prestasi] (nim, dosen_id, judul, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, peran_mahasiswa_id, peran_dosen_id) VALUES
-('2341760028', 1, 'Mobile UI/UX Competition', '2024-01-01', '2024-01-05', '5', 1, 2, 1, 1, 1, 1),
-('2341760058', 2, 'Karya Tulis Ilmiah', '2024-02-01', '2024-02-03', '3', 12, 1, 2, 2, 2, 2);
+INSERT INTO [prestasi] 
+(judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, verifikasi_status) 
+VALUES
+('Mobile UI/UX Competition', 'Jakarta', 'http://linkkompetisi1.com', '2024-01-01', '2024-01-05', '5', 1, 2, 1, 1, 'Belum Terverifikasi'),
+('Karya Tulis Ilmiah', 'Bandung', 'http://linkkompetisi2.com', '2024-02-01', '2024-02-03', '3', 12, 1, 2, 2, 'Belum Terverifikasi');
 
+-- Dummy data for presma table
+INSERT INTO [presma] (nim, prestasi_id, peran_mahasiswa_id)
+VALUES
+    ('2341760028', 1, 1),
+    ('2341760058', 2, 2);
 
-
-
-
+-- Dummy data for dospem table
+INSERT INTO [dospem] (dosen_id, prestasi_id, peran_dosen_id)
+VALUES
+    (1, 1, 1),
+    (2, 2, 2);
