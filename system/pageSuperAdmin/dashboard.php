@@ -777,6 +777,18 @@
       });
     </script>
     <script>
+        const logoutLink = document.getElementById('logout-link');
+
+        logoutLink.addEventListener('click', function(event) {
+            event.preventDefault(); // Mencegah link default
+
+            if (confirm("Apakah Anda yakin ingin logout?")) {
+                // Jika user mengkonfirmasi, arahkan ke logout.php
+                window.location.href = this.href;
+            }
+        });
+    </script>
+    <script>
       var win = navigator.platform.indexOf("Win") > -1;
       if (win && document.querySelector("#sidenav-scrollbar")) {
         var options = {

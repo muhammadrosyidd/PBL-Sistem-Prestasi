@@ -1,17 +1,51 @@
-<!--
-=========================================================
-* Argon Dashboard 3 - v2.1.0
-=========================================================
+<?php
+require_once __DIR__ . '/../../config/Connection.php'; // Pastikan Anda telah menginstal PHPSpreadsheet via Composer
 
-* Product Page: https://www.creative-tim.com/product/argon-dashboard
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://www.creative-tim.com/license)
-* Coded by Creative Tim
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-=========================================================
+$conn = sqlsrv_connect($serverName, $connectionOptions);
+if ($conn === false) {
+    die(print_r(sqlsrv_errors(), true));
+}
 
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
--->
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Query untuk mengambil data laporan dari database
+    $sql = "SELECT id AS No, tanggal AS Tanggal, nama_kompetisi AS NamaKompetisi, jenis AS Jenis FROM laporan";
+    $stmt = sqlsrv_query($conn, $sql);
+    if ($stmt === false) {
+        die(print_r(sqlsrv_errors(), true));
+    }
+
+    // Memasukkan data dari database ke dalam array
+    $laporanData = [["No", "Tanggal", "Nama Kompetisi", "Jenis"]]; // Header kolom
+    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+        $laporanData[] = [$row['No'], $row['Tanggal']->format('Y-m-d'), $row['NamaKompetisi'], $row['Jenis']];
+    }
+
+    // Membuat objek Spreadsheet
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Menambahkan data ke dalam sheet
+    foreach ($laporanData as $rowIndex => $rowData) {
+        foreach ($rowData as $colIndex => $cellData) {
+            $sheet->setCellValueByColumnAndRow($colIndex + 1, $rowIndex + 1, $cellData);
+        }
+    }
+
+    // Set header untuk pengunduhan file
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="laporan.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    // Menggunakan Xlsx untuk menulis file Excel
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 

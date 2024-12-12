@@ -128,7 +128,8 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 1) {
                 <li class="nav-item">
                     <a
                         class="nav-link <?= isActive('logout.php'); ?>"
-                        href="../logout/logout.php">
+                        href="../logout/logout.php"
+                        id="logout-link">
                         <div
                             class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-send text-dark text-sm opacity-10"></i>

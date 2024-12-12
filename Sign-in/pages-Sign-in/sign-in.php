@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: ../../system/pageAdmin/dashboard.php");
                 break;
             case "3":
-                header("Location: ../../system/mahasiswa/dashboard.html");
+                header("Location: ../../system/PageMahasiswa/dashboard.php");
                 break;
             default:
                 echo "Role tidak dikenali.";
