@@ -4,7 +4,7 @@ require 'phpspreadsheet/vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-require_once __DIR__ . '/../../config/Connection.php'; 
+require_once __DIR__ . '/../../config/ConnectionPDO.php'; 
 
 // Fungsi untuk menampilkan preview data dalam tabel
 function showPreviewData($conn, $tanggal_awal, $tanggal_akhir) {

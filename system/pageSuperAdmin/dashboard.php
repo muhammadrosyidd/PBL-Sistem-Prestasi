@@ -1,17 +1,4 @@
-<!--
-=========================================================
-* Argon Dashboard 3 - v2.1.0
-=========================================================
 
-* Product Page: https://www.creative-tim.com/product/argon-dashboard
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://www.creative-tim.com/license)
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
--->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -693,20 +680,10 @@
       new Chart(ctx1, {
         type: "line",
         data: {
-          labels: [
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ],
+          labels: <?php echo json_encode($labels); ?>, // Mengambil data label dari PHP
           datasets: [
             {
-              label: "Mobile apps",
+              label: "Prestasi",
               tension: 0.4,
               borderWidth: 0,
               pointRadius: 0,
@@ -714,7 +691,7 @@
               backgroundColor: gradientStroke1,
               borderWidth: 3,
               fill: true,
-              data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+              data: <?php echo json_encode($data); ?>, // Mengambil data jumlah prestasi dari PHP
               maxBarThickness: 6,
             },
           ],

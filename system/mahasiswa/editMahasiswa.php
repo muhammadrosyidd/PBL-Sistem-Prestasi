@@ -174,7 +174,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="card">
                         <div class="card-header pb-0">
                             <div class="d-flex align-items-center">
-                                <p class="mb-0">Input Mahasiswa</p>
+                                <p class="mb-0">Edit Mahasiswa</p>
                             </div>
                         </div>
                         <div class="card-body">
