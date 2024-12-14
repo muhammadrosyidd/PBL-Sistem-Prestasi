@@ -9,6 +9,11 @@ ob_start();
 // Include file koneksi
 require_once __DIR__ . '/../../config/Connection.php';
 
+// Initialize variables
+$nidn = '';
+$nama_dosen = '';
+$telepon = '';
+
 // Jika ada data yang dikirimkan via POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form

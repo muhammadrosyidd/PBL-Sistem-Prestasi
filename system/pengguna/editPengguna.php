@@ -21,12 +21,12 @@ if (isset($_GET['username'])) {
     $user_data = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
 
     // Populate form fields with existing data
-    $nama_admin = $user_data['nama'];
-    $jabatan = $user_data['jabatan'];
-    $jenis_kelamin = $user_data['jeniskelamin'];
-    $no_telepon = $user_data['telepon'];
-    $alamat = $user_data['alamat'];
-    $role = $user_data['role'];
+    $nama_admin = $user_data['nama'] ?? '';
+    $jabatan = $user_data['jabatan'] ?? '';
+    $jenis_kelamin = $user_data['jeniskelamin'] ?? '';
+    $no_telepon = $user_data['telepon'] ?? '';
+    $alamat = $user_data['alamat'] ?? '';
+    $role = $user_data['role'] ?? '';
 }
 
 // Handle the form submission for updating user data
@@ -70,9 +70,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("Location: dataPengguna.php");
     exit(); // Pastikan script dihentikan setelah redirect
 }
-
-// Menyelesaikan output buffering
-ob_end_flush();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -127,13 +124,13 @@ ob_end_flush();
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="nama_admin" class="form-control-label">Nama Admin</label>
-                                            <input class="form-control" type="text" name="nama_admin" value="<?php echo htmlspecialchars($nama_admin); ?>" required>
+                                            <input class="form-control" type="text" name="nama_admin" value="<?php echo htmlspecialchars($nama_admin ?? ''); ?>" required>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="jabatan" class="form-control-label">Jabatan</label>
-                                            <input class="form-control" type="text" name="jabatan" value="<?php echo htmlspecialchars($jabatan); ?>" required>
+                                            <input class="form-control" type="text" name="jabatan" value="<?php echo htmlspecialchars($jabatan ?? ''); ?>" required>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
@@ -148,7 +145,7 @@ ob_end_flush();
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="username" class="form-control-label">Username</label>
-                                            <input class="form-control" type="text" name="username" value="<?php echo htmlspecialchars($username); ?>" readonly required>
+                                            <input class="form-control" type="text" name="username" value="<?php echo htmlspecialchars($username ?? ''); ?>" readonly required>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
@@ -160,13 +157,13 @@ ob_end_flush();
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="no_telepon" class="form-control-label">No Telepon</label>
-                                            <input class="form-control" type="text" name="no_telepon" value="<?php echo htmlspecialchars($no_telepon); ?>" required>
+                                            <input class="form-control" type="text" name="no_telepon" value="<?php echo htmlspecialchars($no_telepon ?? ''); ?>" required>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="alamat" class="form-control-label">Alamat</label>
-                                            <input class="form-control" type="text" name="alamat" value="<?php echo htmlspecialchars($alamat); ?>" required>
+                                            <input class="form-control" type="text" name="alamat" value="<?php echo htmlspecialchars($alamat ?? ''); ?>" required>
                                         </div>
                                     </div>
                                     <div class="col-md-12">

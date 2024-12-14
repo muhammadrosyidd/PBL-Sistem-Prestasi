@@ -107,19 +107,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   <div class="col-md-12">
                     <div class="form-group">
                       <label for="nidn" class="form-control-label">NIDN</label>
-                      <input class="form-control" type="text" name="nidn" value="<?php echo $nidn; ?>" required>
+                      <input class="form-control" type="text" name="nidn" required>
                     </div>
                   </div>
                   <div class="col-md-12">
                     <div class="form-group">
                       <label for="nama_dosen" class="form-control-label">Nama Dosen</label>
-                      <input class="form-control" type="text" name="nama_dosen" value="<?php echo $nama_dosen; ?>" required>
+                      <input class="form-control" type="text" name="nama_dosen" required>
                     </div>
                   </div>
                   <div class="col-md-12">
                     <div class="form-group">
                       <label for="telepon" class="form-control-label">No Telpon</label>
-                      <input class="form-control" type="text" name="telepon" value="<?php echo $telepon; ?>" required>
+                      <input class="form-control" type="text" name="telepon" required>
                     </div>
                   </div>
                 </div>

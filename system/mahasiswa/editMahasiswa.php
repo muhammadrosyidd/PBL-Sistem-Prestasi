@@ -3,75 +3,129 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Mulai output buffering
-ob_start();
-
 // Include file koneksi
 require_once __DIR__ . '/../../config/Connection.php';
 
-// Fetch user data if available for editing
-if (isset($_GET['username'])) {
-    $username = $_GET['username'];
-    $query = "SELECT * FROM [user] u 
-              LEFT JOIN [mahasiswa] m ON u.username = m.username
-              WHERE u.username = ?";
-    $params = array($username);
-    $stmt = sqlsrv_query($conn, $query, $params);
-    $user_data = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+// Initialize variables
+$nim = isset($_GET['nim']) ? $_GET['nim'] : ''; // Assuming 'nim' is passed via URL or set it if needed
+$nama_depan = '';
+$nama_belakang = '';
+$jenis_kelamin = ''; // Default to empty
+$telepon = '';
+$alamat = '';
+$prodi_id = ''; // Default to empty
+$username = ''; // Default to empty, or fetch from database if needed
 
-    // Populate form fields with existing data
-    $nim = $user_data['nim'];
-    $nama_depan = $user_data['nama_depan'];
-    $nama_belakang = $user_data['nama_belakang'];
-    $jenis_kelamin = $user_data['jeniskelamin'];
-    $jabatan = $user_data['jabatan'];
-    $telepon = $user_data['telepon'];
-    $alamat = $user_data['alamat'];
-    
+// Fetch existing data for editing (assuming you are querying based on $nim)
+if ($nim != '') {
+    // Assuming query to fetch student details
+    $query = "SELECT * FROM mahasiswa WHERE nim = ?";
+    $stmt = sqlsrv_query($conn, $query, array($nim));
+    if ($stmt) {
+        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        $nama_depan = $row['nama_depan'];
+        $nama_belakang = $row['nama_belakang'];
+        $jenis_kelamin = $row['jeniskelamin'];
+        $telepon = $row['telepon'];
+        $alamat = $row['alamat'];
+        $prodi_id = $row['prodi_id'];
+
+        // Also fetch the username from the 'user' table
+        $query_user = "SELECT username FROM [user] WHERE username = ?";
+        $stmt_user = sqlsrv_query($conn, $query_user, array($nim));
+        if ($stmt_user) {
+            $user_row = sqlsrv_fetch_array($stmt_user, SQLSRV_FETCH_ASSOC);
+            $username = $user_row['username'];
+        }
+    }
 }
 
-// Handle the form submission for updating user data
+// Fetch program studi data from the prodi table
+$query_prodi = "SELECT * FROM prodi";
+$stmt_prodi = sqlsrv_query($conn, $query_prodi);
+$prodi_list = [];
+if ($stmt_prodi) {
+    while ($row = sqlsrv_fetch_array($stmt_prodi, SQLSRV_FETCH_ASSOC)) {
+        $prodi_list[] = $row;
+    }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
-    $nim = $_POST['nim'];
-    $nama_depan = $_POST['nama_depan'];
-    $nama_belakang = $_POST['nama_belakang'];
-    // $jenis_kelamin = $_POST['jeniskelamin'];
-    $jabatan = $_POST['jabatan'];
-    $telepon = $_POST['telepon'];
-    $alamat = $_POST['alamat'];
-    
-    // Convert 'L' and 'P' back to 1 and 2 for database storage
-    $jenis_kelamin_db = ($jenis_kelamin == 'L') ? 1 : 2;
+    $nim = trim($_POST['nim']);
+    $nama_depan = trim($_POST['nama_depan']);
+    $nama_belakang = trim($_POST['nama_belakang']);
+    $jenis_kelamin = trim($_POST['jeniskelamin']);
+    $telepon = trim($_POST['telepon']);
+    $alamat = trim($_POST['alamat']);
+    $prodi_id = trim($_POST['prodi_id']);
+    $password = trim($_POST['password']); // Ambil password
 
-    // Jika password diubah, encode password ke MD5 (hexadecimal 32 karakter)
-    if (!empty($password)) {
-        $encoded_password = md5($password);
-        $encoded_password_bin = pack('H*', $encoded_password);
-        $update_password_query = "UPDATE [user] SET password = ? WHERE username = ?";
-        $params_password = array($encoded_password_bin, $username);
-        $stmt_password = sqlsrv_query($conn, $update_password_query, $params_password);
+    try {
+        // Validasi NIM
+        if (empty($nim)) {
+            throw new Exception("NIM tidak boleh kosong.");
+        }
+
+        // Begin Transaction
+        sqlsrv_begin_transaction($conn);
+
+        // Update data di tabel mahasiswa
+        if (!empty($password)) {
+            // Jika password diisi, perbarui dengan hash MD5
+            $query_update_mahasiswa = "
+                UPDATE [mahasiswa] 
+                SET nama_depan = ?, nama_belakang = ?, jeniskelamin = ?, telepon = ?, alamat = ?, prodi_id = ? 
+                WHERE nim = ?";
+            $params_update_mahasiswa = array($nama_depan, $nama_belakang, $jenis_kelamin, $telepon, $alamat, $prodi_id, $nim);
+
+            $query_update_user = "
+                UPDATE [user] 
+                SET username = ?, password = CONVERT(VARBINARY(16), HASHBYTES('MD5', ?)) 
+                WHERE username = ?";
+            $params_update_user = array($nim, $password, $nim);
+        } else {
+            // Jika password tidak diisi, hanya perbarui data mahasiswa
+            $query_update_mahasiswa = "
+                UPDATE [mahasiswa] 
+                SET nama_depan = ?, nama_belakang = ?, jeniskelamin = ?, telepon = ?, alamat = ?, prodi_id = ? 
+                WHERE nim = ?";
+            $params_update_mahasiswa = array($nama_depan, $nama_belakang, $jenis_kelamin, $telepon, $alamat, $prodi_id, $nim);
+
+            // Query update username tanpa mengganti password
+            $query_update_user = "
+                UPDATE [user] 
+                SET username = ? 
+                WHERE username = ?";
+            $params_update_user = array($nim, $nim);
+        }
+
+        // Eksekusi query update mahasiswa
+        $stmt_update_mahasiswa = sqlsrv_query($conn, $query_update_mahasiswa, $params_update_mahasiswa);
+        if ($stmt_update_mahasiswa === false) {
+            throw new Exception("Error updating mahasiswa: " . print_r(sqlsrv_errors(), true));
+        }
+
+        // Eksekusi query update user
+        $stmt_update_user = sqlsrv_query($conn, $query_update_user, $params_update_user);
+        if ($stmt_update_user === false) {
+            throw new Exception("Error updating user: " . print_r(sqlsrv_errors(), true));
+        }
+
+        // Commit Transaction
+        sqlsrv_commit($conn);
+
+        // Redirect ke halaman dataMahasiswa.php setelah berhasil
+        header("Location: dataMahasiswa.php");
+        exit();
+    } catch (Exception $e) {
+        // Rollback Transaction jika terjadi error
+        sqlsrv_rollback($conn);
+
+        // Tampilkan pesan error
+        echo "Error: " . $e->getMessage();
     }
-
-    // Update data user (username dan role tidak berubah, jadi tidak perlu diubah di sini)
-    $update_user_query = "UPDATE [user] SET role = ? WHERE username = ?";
-    $params_update_user = array($role, $username);
-    $stmt_update_user = sqlsrv_query($conn, $update_user_query, $params_update_user);
-
-    // Update data superadmin atau admin berdasarkan role
-    if ($role == 3) { // Super Admin
-        $update_mahasiswa_query = "UPDATE [mahasiswa] SET nim = ?, nama_depan =?, nama_belakang = ?, prodi_id = ?, jeniskelamin = ?, telepon = ?, alamat = ? WHERE username = ?";
-        $params_update_mahasiswa = array($nim, $nama_depan, $nama_belakang, $jenis_kelamin, $telepon, $alamat, $prodi_id, $username);
-        $stmt_update_mahasiswa = sqlsrv_query($conn, $update_mahasiswa_query, $params_update_mahasiswa);
-    } 
-
-    // Redirect ke halaman dataPengguna.php setelah berhasil
-    header("Location: dataMahasiswa.php");
-    exit(); // Pastikan script dihentikan setelah redirect
 }
-
-// Menyelesaikan output buffering
-ob_end_flush();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -82,7 +136,7 @@ ob_end_flush();
     <link rel="apple-touch-icon" sizes="76x76" href="../../assets2/img/jti.png">
     <link rel="icon" type="image/png" href="../../assets2/img/jti.png">
     <title>
-        Update Pengguna
+        Input Mahasiswa
     </title>
     <!--     Fonts and icons     -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
@@ -106,98 +160,103 @@ ob_end_flush();
     ?>
     <div class="main-content position-relative max-height-vh-100 h-100">
         <!-- Navbar -->
+        <nav
+            class="navbar navbar-main navbar-expand-lg bg-transparent shadow-none position-absolute px-4 w-100 z-index-2 mt-n11">
 
+        </nav>
         <!-- End Navbar -->
         <div class="card shadow-lg mx-4 card-profile-bottom">
+
         </div>
         <div class="container-fluid py-4">
             <div class="row">
-                
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header pb-0">
-                    <div class="d-flex align-items-center">
-                        <p class="mb-0">Update Pengguna</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <form action="" method="POST">
-                        <div class="row">
-                        <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="nim" class="form-control-label">NIM Mahasiswa</label>
-                                    <input class="form-control" type="text" name="nim" value="<?php echo $nim; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="username" class="form-control-label">Username</label>
-                                    <input class="form-control" type="text" name="username" value="<?php echo $username; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="password" class="form-control-label">Password (Kosongkan jika tidak ingin mengubah)</label>
-                                    <input class="form-control" type="password" name="password">
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="nama_depan" class="form-control-label">Nama Depan</label>
-                                    <input class="form-control" type="text" name="nama_depan" value="<?php echo $nama_depan; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="nama_belakang" class="form-control-label">Nama Belakang</label>
-                                    <input class="form-control" type="text" name="nama_belakang" value="<?php echo $nama_belakang; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="prodi_id" class="form-control-label">Program Studi</label>
-                                    <select class="form-control" name="prodi_id" required>
-                                        <option value="1" <?php if ($prodi_id == '1') echo 'selected'; ?>>D4 Teknik Informatika</option>
-                                        <option value="2" <?php if ($prodi_id == '2') echo 'selected'; ?>>D4 Sistem Informasi Bisnis</option>
-                                        <option value="3" <?php if ($prodi_id == '3') echo 'selected'; ?>>D2 Pengembangan Piranti Lunak Situs</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="jeniskelamin" class="form-control-label">Jenis Kelamin</label>
-                                    <select class="form-control" name="jeniskelamin" required>
-                                        <option value="L" <?php if ($jeniskelamin == 'L') echo 'selected'; ?>>Laki-laki</option>
-                                        <option value="P" <?php if ($jeniskelamin == 'P') echo 'selected'; ?>>Perempuan</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="telepon" class="form-control-label">No Telepon</label>
-                                    <input class="form-control" type="number" name="telepon" value="<?php echo $telepon; ?>" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="alamat" class="form-control-label">Alamat</label>
-                                    <input class="form-control" type="text" name="alamat" value="<?php echo $alamat; ?>" readonly required>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-warning">Submit</button>
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header pb-0">
+                            <div class="d-flex align-items-center">
+                                <p class="mb-0">Input Mahasiswa</p>
                             </div>
                         </div>
-                    </form>
+                        <div class="card-body">
+                            <!-- <p class="text-uppercase text-sm">User Information</p> -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <form action="" method="POST">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="nim" class="form-control-label">NIM Mahasiswa</label>
+                                                    <input class="form-control" type="text" name="nim" value="<?php echo htmlspecialchars($nim ?? ''); ?>" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="username" class="form-control-label">Username</label>
+                                                    <input class="form-control" type="text" name="username" value="<?php echo htmlspecialchars($username ?? ''); ?>" readonly required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="password" class="form-control-label">Password (Kosongkan jika tidak ingin mengubah)</label>
+                                                    <input class="form-control" type="password" name="password">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="nama_depan" class="form-control-label">Nama Depan</label>
+                                                    <input class="form-control" type="text" name="nama_depan" value="<?php echo htmlspecialchars($nama_depan ?? ''); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="nama_belakang" class="form-control-label">Nama Belakang</label>
+                                                    <input class="form-control" type="text" name="nama_belakang" value="<?php echo htmlspecialchars($nama_belakang ?? ''); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="jeniskelamin" class="form-control-label">Jenis Kelamin</label>
+                                                    <select class="form-control" name="jeniskelamin" required>
+                                                        <option value="L" <?php echo ($jenis_kelamin == 'L') ? 'selected' : ''; ?>>Laki-laki</option>
+                                                        <option value="P" <?php echo ($jenis_kelamin == 'P') ? 'selected' : ''; ?>>Perempuan</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="telepon" class="form-control-label">No Telepon</label>
+                                                    <input class="form-control" type="text" name="telepon" value="<?php echo htmlspecialchars($telepon ?? ''); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="alamat" class="form-control-label">Alamat</label>
+                                                    <input class="form-control" type="text" name="alamat" value="<?php echo htmlspecialchars($alamat ?? ''); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="prodi_id" class="form-control-label">Program Studi</label>
+                                                    <select class="form-control" name="prodi_id" required>
+                                                        <option value="1" <?php echo ($prodi_id == 1) ? 'selected' : ''; ?>>D4 Teknik Informatika</option>
+                                                        <option value="2" <?php echo ($prodi_id == 2) ? 'selected' : ''; ?>>D4 Sistem Informasi Bisnis</option>
+                                                        <option value="3" <?php echo ($prodi_id == 3) ? 'selected' : ''; ?>>D2 Pengembangan Piranti Lunak Situs</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <button type="submit" class="btn btn-warning">Submit</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    </div>
+        </div>
     </div>
 
     <!--   Core JS Files   -->

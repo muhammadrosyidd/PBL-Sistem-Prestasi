@@ -6,7 +6,7 @@ class Connection {
     private $dbname;
     private $conn;
 
-    // Constructor to initialize database connection parameters
+    // Constructor untuk menginisialisasi parameter koneksi database
     public function __construct($servername, $username, $password, $dbname) {
         $this->servername = $servername;
         $this->username = $username;
@@ -14,36 +14,33 @@ class Connection {
         $this->dbname = $dbname;
     }
 
-    // Method to establish the connection
+    // Method untuk membuka koneksi menggunakan PDO
     public function connect() {
-        $this->conn = sqlsrv_connect($this->servername, array(
-            "UID" => $this->username,
-            "PWD" => $this->password,
-            "Database" => $this->dbname,
-        ));
-
-        // Check connection
-        if ($this->conn === false) {
-            die(print_r(sqlsrv_errors(), true));
+        try {
+            // Membuka koneksi PDO ke SQL Server
+            $this->conn = new PDO("sqlsrv:Server=$this->servername;Database=$this->dbname", $this->username, $this->password);
+            // Set error mode PDO ke exception
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die("Koneksi gagal: " . $e->getMessage());
         }
 
         return $this->conn;
     }
 
-    // Method to close the connection
+    // Method untuk menutup koneksi
     public function close() {
-        if ($this->conn) {
-            sqlsrv_close($this->conn);
-        }
+        $this->conn = null;
     }
 
-    // Getter for connection
+    // Getter untuk mendapatkan koneksi
     public function getConnection() {
         return $this->conn;
     }
 }
 
-// Create a new instance of DatabaseConnection and connect
+// Membuat instance dan membuka koneksi
 $db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
 $conn = $db->connect();
+
 ?>
