@@ -18,9 +18,65 @@
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <!-- CSS Files -->
   <link id="pagestyle" href="../../assets2/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="g-sidenav-show   bg-gray-100">
+  <!-- <h1>Dashboard Prestasi</h1> -->
+
+  <?php
+  // Koneksi ke database (ganti dengan detail koneksi Anda)
+  require_once __DIR__ . '/../../config/ConnectionPDO.php';
+  //Query ambil jumlah mhs
+  $query = "SELECT COUNT(*) AS total_mahasiswa FROM mahasiswa"; // Ganti 'mahasiswa' dengan nama tabel Anda
+  $stmt = $conn->prepare($query);
+  $stmt->execute();
+  $jumlahMahasiswa = $stmt->fetchColumn();
+
+  // Query untuk menghitung mahasiswa berprestasi unik (menggunakan DISTINCT)
+  $query = "SELECT COUNT(DISTINCT nim) AS jumlah_mapres FROM presma";
+  $stmt2 = $conn->prepare($query);
+  $stmt2->execute();
+  $jumlahMapres = $stmt2->fetchColumn();
+
+  // Query untuk jumlah prestasi yang sudah diverifikasi
+  $query = "SELECT COUNT(*) AS jumlah_verif FROM prestasi WHERE verifikasi_status = 'Terverifikasi'";
+  $stmt3 = $conn->prepare($query);
+  $stmt3->execute();
+  $jumlahVerif = $stmt3->fetchColumn();
+
+  // Query untuk jumlah prestasi yang belum diverifikasi
+  $query = "SELECT COUNT(*) AS jumlah_verif FROM prestasi WHERE verifikasi_status = 'Belum Terverifikasi'";
+  $stmt4 = $conn->prepare($query);
+  $stmt4->execute();
+  $jumlahNonVerif = $stmt4->fetchColumn();
+
+  // Query untuk mengambil data prestasi selama 12 bulan terakhir
+  $tahunSekarang = date('Y');
+  $dataGrafik = [];
+  $labelGrafik = [];
+
+  for ($i = 0; $i < 12; $i++) {
+    $bulan = date('m', strtotime("-$i months"));
+    $namaBulan = date('M', strtotime("-$i months"));
+    $tahun = date('Y', strtotime("-$i months"));
+
+    $query = "SELECT COUNT(*) AS jumlah_prestasi FROM prestasi WHERE MONTH(tanggal_input) = ? AND YEAR(tanggal_input) = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->execute([$bulan, $tahun]);
+    $hasil = $stmt->fetch(PDO::FETCH_ASSOC);
+    $jumlahPrestasi = $hasil['jumlah_prestasi'];
+
+    $dataGrafik[] = $jumlahPrestasi;
+    $labelGrafik[] = $namaBulan . " " . $tahun;
+  }
+
+  $dataGrafik = array_reverse($dataGrafik);
+  $labelGrafik = array_reverse($labelGrafik);
+
+  $dataGrafikJson = json_encode($dataGrafik);
+  $labelGrafikJson = json_encode($labelGrafik);
+  ?>
   <div class="min-height-300 bg-gradient-warning position-absolute w-100"></div>
   <?php
   include_once __DIR__ . '/../layout/sidebarSuper.php';
@@ -29,7 +85,55 @@
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur"
       data-scroll="false">
-      
+      <div class="container-fluid py-1 px-3">
+        <nav aria-label="breadcrumb">
+          <ol
+            class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+            <li class="breadcrumb-item text-sm">
+              <a class="opacity-5 text-white" href="javascript:;">
+                Admin</a>
+            </li>
+            <li
+              class="breadcrumb-item text-sm text-white active"
+              aria-current="page">
+              Dashboard
+            </li>
+          </ol>
+          <h6 class="font-weight-bolder text-white mb-0">Dashboard</h6>
+        </nav>
+        <div class="mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+          <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+            <div class="input-group">
+              <!-- <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+              <input type="text" class="form-control" placeholder="Type here..."> -->
+            </div>
+          </div>
+          <ul class="navbar-nav justify-content-end">
+            <li class="nav-item d-flex align-items-center">
+              <a
+                href="../pages-SuperAdmin/profile.html"
+                class="nav-link text-white font-weight-bold px-0">
+                <i class="fa fa-user me-sm-1"></i>
+                <span class="d-sm-inline d-none">Profile</span>
+              </a>
+            </li>
+            <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
+              <a
+                href="javascript:;"
+                class="nav-link text-white p-0"
+                id="iconNavbarSidenav">
+                <div class="sidenav-toggler-inner">
+                  <i class="sidenav-toggler-line bg-white"></i>
+                  <i class="sidenav-toggler-line bg-white"></i>
+                  <i class="sidenav-toggler-line bg-white"></i>
+                </div>
+              </a>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+
     </nav>
     <!-- End Navbar -->
     <div class="container-fluid py-4">
@@ -42,7 +146,7 @@
                   <div class="numbers">
                     <p class="text-sm mb-0 text-uppercase font-weight-bold">Jumlah Mahasiswa</p>
                     <h5 class="font-weight-bolder">
-                      2500
+                      <?php echo $jumlahMahasiswa; ?>
                     </h5>
                   </div>
                 </div>
@@ -63,7 +167,7 @@
                   <div class="numbers">
                     <p class="text-sm mb-0 text-uppercase font-weight-bold">Mahasiswa Berprestasi</p>
                     <h5 class="font-weight-bolder">
-                      120
+                      <?php echo $jumlahMapres; ?>
                     </h5>
                   </div>
                 </div>
@@ -84,7 +188,7 @@
                   <div class="numbers">
                     <p class="text-sm mb-0 text-uppercase font-weight-bold">Prestasi Telah Divalidasi</p>
                     <h5 class="font-weight-bolder">
-                      100
+                    <?php echo $jumlahVerif; ?>
                     </h5>
                     <!-- <p class="mb-0">
                       <span class="text-danger text-sm font-weight-bolder">-2%</span>
@@ -109,7 +213,7 @@
                   <div class="numbers">
                     <p class="text-sm mb-0 text-uppercase font-weight-bold">Prestasi Belum Divalidasi</p>
                     <h5 class="font-weight-bolder">
-                      20
+                    <?php echo $jumlahNonVerif; ?>
                     </h5>
                     <!-- <p class="mb-0">
                       <span class="text-success text-sm font-weight-bolder">+5%</span> than last month
@@ -131,10 +235,6 @@
           <div class="card z-index-2 h-100">
             <div class="card-header pb-0 pt-3 bg-transparent">
               <h6 class="text-capitalize">Grafik Prestasi</h6>
-              <p class="text-sm mb-0">
-                <i class="fa fa-arrow-up text-success"></i>
-                <span class="font-weight-bold">4% more</span> in 2021
-              </p>
             </div>
             <div class="card-body p-3">
               <div class="chart">
@@ -193,218 +293,7 @@
           </div>
         </div>
       </div>
-      <div class="row mt-4">
-        <div class="col-lg-7 mb-lg-0 mb-4">
-          <div class="card ">
-            <div class="card-header pb-0 p-3">
-              <div class="d-flex justify-content-between">
-                <h6 class="mb-2">Sales by Country</h6>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table class="table align-items-center ">
-                <tbody>
-                  <tr>
-                    <td class="w-30">
-                      <div class="d-flex px-2 py-1 align-items-center">
-                        <div>
-                          <img src="../../assets2/img/icons/flags/US.png" alt="Country flag">
-                        </div>
-                        <div class="ms-4">
-                          <p class="text-xs font-weight-bold mb-0">Country:</p>
-                          <h6 class="text-sm mb-0">United States</h6>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Sales:</p>
-                        <h6 class="text-sm mb-0">2500</h6>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Value:</p>
-                        <h6 class="text-sm mb-0">$230,900</h6>
-                      </div>
-                    </td>
-                    <td class="align-middle text-sm">
-                      <div class="col text-center">
-                        <p class="text-xs font-weight-bold mb-0">Bounce:</p>
-                        <h6 class="text-sm mb-0">29.9%</h6>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="w-30">
-                      <div class="d-flex px-2 py-1 align-items-center">
-                        <div>
-                          <img src="../../assets2/img/icons/flags/DE.png" alt="Country flag">
-                        </div>
-                        <div class="ms-4">
-                          <p class="text-xs font-weight-bold mb-0">Country:</p>
-                          <h6 class="text-sm mb-0">Germany</h6>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Sales:</p>
-                        <h6 class="text-sm mb-0">3.900</h6>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Value:</p>
-                        <h6 class="text-sm mb-0">$440,000</h6>
-                      </div>
-                    </td>
-                    <td class="align-middle text-sm">
-                      <div class="col text-center">
-                        <p class="text-xs font-weight-bold mb-0">Bounce:</p>
-                        <h6 class="text-sm mb-0">40.22%</h6>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="w-30">
-                      <div class="d-flex px-2 py-1 align-items-center">
-                        <div>
-                          <img src="../../assets2/img/icons/flags/GB.png" alt="Country flag">
-                        </div>
-                        <div class="ms-4">
-                          <p class="text-xs font-weight-bold mb-0">Country:</p>
-                          <h6 class="text-sm mb-0">Great Britain</h6>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Sales:</p>
-                        <h6 class="text-sm mb-0">1.400</h6>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Value:</p>
-                        <h6 class="text-sm mb-0">$190,700</h6>
-                      </div>
-                    </td>
-                    <td class="align-middle text-sm">
-                      <div class="col text-center">
-                        <p class="text-xs font-weight-bold mb-0">Bounce:</p>
-                        <h6 class="text-sm mb-0">23.44%</h6>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="w-30">
-                      <div class="d-flex px-2 py-1 align-items-center">
-                        <div>
-                          <img src="../../assets2/img/icons/flags/BR.png" alt="Country flag">
-                        </div>
-                        <div class="ms-4">
-                          <p class="text-xs font-weight-bold mb-0">Country:</p>
-                          <h6 class="text-sm mb-0">Brasil</h6>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Sales:</p>
-                        <h6 class="text-sm mb-0">562</h6>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="text-center">
-                        <p class="text-xs font-weight-bold mb-0">Value:</p>
-                        <h6 class="text-sm mb-0">$143,960</h6>
-                      </div>
-                    </td>
-                    <td class="align-middle text-sm">
-                      <div class="col text-center">
-                        <p class="text-xs font-weight-bold mb-0">Bounce:</p>
-                        <h6 class="text-sm mb-0">32.14%</h6>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-5">
-          <div class="card">
-            <div class="card-header pb-0 p-3">
-              <h6 class="mb-0">Categories</h6>
-            </div>
-            <div class="card-body p-3">
-              <ul class="list-group">
-                <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
-                  <div class="d-flex align-items-center">
-                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                      <i class="ni ni-mobile-button text-white opacity-10"></i>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-1 text-dark text-sm">Devices</h6>
-                      <span class="text-xs">250 in stock, <span class="font-weight-bold">346+ sold</span></span>
-                    </div>
-                  </div>
-                  <div class="d-flex">
-                    <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i
-                        class="ni ni-bold-right" aria-hidden="true"></i></button>
-                  </div>
-                </li>
-                <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
-                  <div class="d-flex align-items-center">
-                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                      <i class="ni ni-tag text-white opacity-10"></i>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-1 text-dark text-sm">Tickets</h6>
-                      <span class="text-xs">123 closed, <span class="font-weight-bold">15 open</span></span>
-                    </div>
-                  </div>
-                  <div class="d-flex">
-                    <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i
-                        class="ni ni-bold-right" aria-hidden="true"></i></button>
-                  </div>
-                </li>
-                <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
-                  <div class="d-flex align-items-center">
-                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                      <i class="ni ni-box-2 text-white opacity-10"></i>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-1 text-dark text-sm">Error logs</h6>
-                      <span class="text-xs">1 is active, <span class="font-weight-bold">40 closed</span></span>
-                    </div>
-                  </div>
-                  <div class="d-flex">
-                    <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i
-                        class="ni ni-bold-right" aria-hidden="true"></i></button>
-                  </div>
-                </li>
-                <li class="list-group-item border-0 d-flex justify-content-between ps-0 border-radius-lg">
-                  <div class="d-flex align-items-center">
-                    <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
-                      <i class="ni ni-satisfied text-white opacity-10"></i>
-                    </div>
-                    <div class="d-flex flex-column">
-                      <h6 class="mb-1 text-dark text-sm">Happy users</h6>
-                      <span class="text-xs font-weight-bold">+ 430</span>
-                    </div>
-                  </div>
-                  <div class="d-flex">
-                    <button class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i
-                        class="ni ni-bold-right" aria-hidden="true"></i></button>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
+      
     </div>
   </main>
   <!--   Core JS Files   -->
@@ -413,20 +302,21 @@
   <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="../../assets2/js/plugins/smooth-scrollbar.min.js"></script>
   <script src="../../assets2/js/plugins/chartjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     var ctx1 = document.getElementById("chart-line").getContext("2d");
 
     var gradientStroke1 = ctx1.createLinearGradient(0, 230, 0, 50);
-
     gradientStroke1.addColorStop(1, 'rgba(94, 114, 228, 0.2)');
     gradientStroke1.addColorStop(0.2, 'rgba(94, 114, 228, 0.0)');
     gradientStroke1.addColorStop(0, 'rgba(94, 114, 228, 0)');
+
     new Chart(ctx1, {
       type: "line",
       data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        labels: <?php echo $labelGrafikJson; ?>,
         datasets: [{
-          label: "Mobile apps",
+          label: "Jumlah Prestasi",
           tension: 0.4,
           borderWidth: 0,
           pointRadius: 0,
@@ -434,10 +324,9 @@
           backgroundColor: gradientStroke1,
           borderWidth: 3,
           fill: true,
-          data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+          data: <?php echo $dataGrafikJson; ?>,
           maxBarThickness: 6
-
-        }],
+        }]
       },
       options: {
         responsive: true,
@@ -446,10 +335,6 @@
           legend: {
             display: false,
           }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index',
         },
         scales: {
           y: {
@@ -497,17 +382,17 @@
     });
   </script>
   <script>
-        const logoutLink = document.getElementById('logout-link');
+    const logoutLink = document.getElementById('logout-link');
 
-        logoutLink.addEventListener('click', function(event) {
-            event.preventDefault(); // Mencegah link default
+    logoutLink.addEventListener('click', function(event) {
+      event.preventDefault(); // Mencegah link default
 
-            if (confirm("Apakah Anda yakin ingin logout?")) {
-                // Jika user mengkonfirmasi, arahkan ke logout.php
-                window.location.href = this.href;
-            }
-        });
-    </script>
+      if (confirm("Apakah Anda yakin ingin logout?")) {
+        // Jika user mengkonfirmasi, arahkan ke logout.php
+        window.location.href = this.href;
+      }
+    });
+  </script>
   <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {

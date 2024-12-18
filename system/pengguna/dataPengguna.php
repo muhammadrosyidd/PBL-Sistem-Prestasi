@@ -21,7 +21,7 @@ ORDER BY u.role ASC;";
 $result = sqlsrv_query($conn, $query);
 
 if ($result === false) {
-    die(print_r(sqlsrv_errors(), true));
+  die(print_r(sqlsrv_errors(), true));
 }
 ?>
 <!DOCTYPE html>
@@ -49,8 +49,8 @@ if ($result === false) {
 <body class="g-sidenav-show   bg-gray-100">
   <div class="min-height-300 bg-gradient-warning position-absolute w-100"></div>
   <?php
-    include_once __DIR__ . '/../layout/sidebarSuper.php';
-    ?>
+  include_once __DIR__ . '/../layout/sidebarSuper.php';
+  ?>
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur"
@@ -63,53 +63,67 @@ if ($result === false) {
         <div class="col-12">
           <div class="card mb-4">
             <div class="card-header pb-0">
-            <h6>Data Pengguna</h6>
-        <a href="../pengguna/tambahPengguna.php">
-            <button type="button" class="btn bg-gradient-warning mt-2 mb-0">+ Pengguna</button>
-        </a>
-    </div>
-    <div class="card-body px-0 pt-0 pb-2">
-        <div class="table-responsive p-0">
-            <table class="table align-items-center mb-0">
-                <thead>
+              <h6>Data Pengguna</h6>
+              <a href="../pengguna/tambahPengguna.php">
+                <button type="button" class="btn bg-gradient-warning mt-2 mb-0">+ Pengguna</button>
+              </a>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+              <div class="table-responsive p-0">
+                <table class="table align-items-center mb-0">
+                  <thead>
                     <tr>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jabatan</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jenis Kelamin</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Username</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Password</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No Telepon</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Alamat</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Role</th>
-                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jabatan</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jenis Kelamin</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Username</th>
+                      <!-- <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Password</th> -->
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No Telepon</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Alamat</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Role</th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
                     </tr>
-                </thead>
-                <tbody>
-                <?php
-                $no = 1; // Inisialisasi nomor urut
-                while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
-                    // Validasi dan masking data
-                    $nama_admin = isset($row['nama_admin']) ? htmlspecialchars($row['nama_admin']) : '-';
-                    $jabatan = isset($row['jabatan']) ? htmlspecialchars($row['jabatan']) : '-';
-                    $jenis_kelamin = isset($row['jenis_kelamin']) ? htmlspecialchars($row['jenis_kelamin']) : '-';
-                    $username = isset($row['username']) ? htmlspecialchars($row['username']) : '-';
-                    $masked_password = isset($row['password']) ? str_repeat('*', strlen($row['password'])) : '-';
-                    $no_telepon = isset($row['no_telepon']) ? htmlspecialchars($row['no_telepon']) : '-';
-                    $alamat = isset($row['alamat']) ? htmlspecialchars($row['alamat']) : '-';
-                    $role = isset($row['role']) ? htmlspecialchars($row['role']) : '-';
-                    // Output data sesuai struktur tabel
-                    echo "
+                  </thead>
+                  <tbody>
+                    <?php
+                    $no = 1; // Inisialisasi nomor urut
+                    while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                      // Validasi dan masking data
+                      $nama_admin = isset($row['nama_admin']) ? htmlspecialchars($row['nama_admin']) : '-';
+                      $jabatan = isset($row['jabatan']) ? htmlspecialchars($row['jabatan']) : '-';
+                      $jenis_kelamin = isset($row['jenis_kelamin']) ? htmlspecialchars($row['jenis_kelamin']) : '-';
+                      $username = isset($row['username']) ? htmlspecialchars($row['username']) : '-';
+                      $masked_password = isset($row['password']) ? str_repeat('*', strlen($row['password'])) : '-';
+                      $no_telepon = isset($row['no_telepon']) ? htmlspecialchars($row['no_telepon']) : '-';
+                      $alamat = isset($row['alamat']) ? htmlspecialchars($row['alamat']) : '-';
+                      $role = isset($row['role']) ? htmlspecialchars($row['role']) : '-';
+                      $role_text = '';
+                      switch ($role) {
+                        case 1:
+                          $role_text = 'Superadmin';
+                          break;
+                        case 2:
+                          $role_text = 'Admin';
+                          break;
+                        case 3:
+                          $role_text = 'Mahasiswa';
+                          break;
+                        default:
+                          $role_text = 'Tidak Diketahui';
+                          break;
+                      }
+                      // Output data sesuai struktur tabel
+                      echo "
                     <tr>
                         <td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>
                         <td class='text-center text-xxs font-weight-bold mb-0'>{$nama_admin}</td>
                         <td class='text-center text-xxs font-weight-bold mb-0'>{$jabatan}</td>
                         <td class='text-center text-xxs font-weight-bold mb-0'>{$jenis_kelamin}</td>
                         <td class='text-center text-xs font-weight-bold mb-0'>{$username}</td>
-                        <td class='text-center text-xs font-weight-bold mb-0'>{$masked_password}</td>
                         <td class='text-center text-xxs font-weight-bold mb-0'>{$no_telepon}</td>
                         <td class='text-center text-xxs font-weight-bold mb-0'>{$alamat}</td>
-                        <td class='text-center text-xs font-weight-bold mb-0'>{$role}</td>
+                        <td class='text-center text-xs font-weight-bold mb-0'>{$role_text}</td>
                         <td class='align-middle text-center text-sm'>
                             <a href='editPengguna.php?username=" . urlencode($username) . "'>
                                 <span class='btn btn-sm bg-gradient-primary'>Edit</span>
@@ -120,10 +134,10 @@ if ($result === false) {
                             </form>
                         </td>
                     </tr>";
-                    $no++;
-                }
-                ?>
-            </tbody>
+                      $no++;
+                    }
+                    ?>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -149,9 +163,9 @@ if ($result === false) {
   </script>
   <script>
     function confirmDelete() {
-        return confirm("Apakah Anda yakin ingin menghapus pengguna ini?");
+      return confirm("Apakah Anda yakin ingin menghapus pengguna ini?");
     }
-</script>
+  </script>
   </script>
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>

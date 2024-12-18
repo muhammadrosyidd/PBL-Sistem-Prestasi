@@ -17,8 +17,8 @@ class Connection {
     // Method untuk membuka koneksi menggunakan PDO
     public function connect() {
         try {
-            // Membuka koneksi PDO ke SQL Server
-            $this->conn = new PDO("sqlsrv:Server=$this->servername;Database=$this->dbname", $this->username, $this->password);
+            // Membuka koneksi PDO ke SQL Server.  Perubahan ada di baris ini
+            $this->conn = new PDO("sqlsrv:Server=$this->servername;Database=$this->dbname;ConnectionPooling=0", $this->username, $this->password);
             // Set error mode PDO ke exception
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
@@ -39,8 +39,8 @@ class Connection {
     }
 }
 
-// Membuat instance dan membuka koneksi
-$db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
+// Membuat instance dan membuka koneksi. Perubahan ada di baris ini
+$db = new Connection("localhost", "", "", "PRESTASI"); // Servername diubah menjadi localhost
 $conn = $db->connect();
 
 ?>

@@ -16,11 +16,10 @@ class Connection {
 
     // Method to establish the connection
     public function connect() {
-        $this->conn = sqlsrv_connect($this->servername, array(
-            "UID" => $this->username,
-            "PWD" => $this->password,
-            "Database" => $this->dbname,
-        ));
+        // Modified to use array for localhost connection
+        $connInfo = array("Database"=>$this->dbname, "UID"=>$this->username, "PWD"=>$this->password);
+        $this->conn = sqlsrv_connect($this->servername, $connInfo);
+
 
         // Check connection
         if ($this->conn === false) {
@@ -43,7 +42,7 @@ class Connection {
     }
 }
 
-// Create a new instance of DatabaseConnection and connect
-$db = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
+// Create a new instance of DatabaseConnection and connect.  Modified to use localhost
+$db = new Connection("localhost", "", "", "PRESTASI"); // servername diubah menjadi localhost
 $conn = $db->connect();
 ?>
