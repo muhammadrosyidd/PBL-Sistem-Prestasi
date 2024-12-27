@@ -3,7 +3,7 @@ $use_driver = 'sqlsrv'; // atau 'mysql'
 $host = "DAYDREAMER"; // 'localhost'
 $username = ''; // 'sa'
 $password = ''; 
-$database = 'PencatatanPrestasi'; 
+$database = 'PRESTASI'; 
 $db; 
 
 if ($use_driver == 'mysql') { 
@@ -36,15 +36,15 @@ if ($use_driver == 'mysql') {
 }
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
-    $jenisLomba = $_POST['jenisLomba'];
-    $tingkatLomba = $_POST['tingkatLomba'];
-    $tanggalPelaksanaan = $_POST['tanggalPelaksanaan'];
-    $linkPendaftaran = $_POST['linkPendaftaran'];
+    $jenisLomba = $_POST['jenis_lomba'];
+    $tingkatLomba = $_POST['tingkat_lomba_id'];
+    $tanggalPelaksanaan = $_POST['tanggal_pelaksanaan'];
+    $linkPendaftaran = $_POST['link_pendaftaran'];
     $penyelenggara = $_POST['penyelenggara'];
-    $targetFile = $_POST['posterLomba'];
+    $targetFile = $_POST['gambar_poster'];
 
     // SQL untuk memasukkan data
-    $query = "INSERT INTO informasiLomba (posterLomba, jenisLomba, tingkatLomba, tanggalPelaksanaan, linkPendaftaran, penyelenggara)
+    $query = "INSERT INTO infolomba (gambar_poster, jenis_lomba, tingkat_lomba_id, tanggal_pelaksanaan, link_pendaftaran, penyelenggara)
               VALUES ('$targetFile', '$jenisLomba', '$tingkatLomba', '$tanggalPelaksanaan', '$linkPendaftaran', '$penyelenggara')";
 
     if ($use_driver == 'mysql') {
@@ -90,8 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
-    <div class="position-absolute w-100 min-height-300 top-0"
-        style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg'); background-position-y: 50%;">
+    <div class="min-height-300 bg-gradient-warning position-absolute w-100">
         <span class="mask bg-gradient-warning opacity-5"></span>
     </div>
     <aside
@@ -147,7 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
+                    <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.php">
                         <div
                             class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
@@ -222,89 +221,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <i class="fa fa-cog fixed-plugin-button-nav cursor-pointer"></i>
                             </a>
                         </li>
-                        <li class="nav-item dropdown pe-2 d-flex align-items-center">
-                            <a href="javascript:;" class="nav-link text-white p-0" id="dropdownMenuButton"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa fa-bell cursor-pointer"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end px-2 py-3 ms-n4"
-                                aria-labelledby="dropdownMenuButton">
-                                <li class="mb-2">
-                                    <a class="dropdown-item border-radius-md" href="javascript:;">
-                                        <div class="d-flex py-1">
-                                            <div class="my-auto">
-                                                <img src="../assets/img/team-2.jpg" class="avatar avatar-sm me-3">
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="text-sm font-weight-normal mb-1">
-                                                    <span class="font-weight-bold">New message</span> from Laur
-                                                </h6>
-                                                <p class="text-xs text-secondary mb-0">
-                                                    <i class="fa fa-clock me-1"></i>
-                                                    13 minutes ago
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="mb-2">
-                                    <a class="dropdown-item border-radius-md" href="javascript:;">
-                                        <div class="d-flex py-1">
-                                            <div class="my-auto">
-                                                <img src="../assets/img/small-logos/logo-spotify.svg"
-                                                    class="avatar avatar-sm bg-gradient-dark me-3">
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="text-sm font-weight-normal mb-1">
-                                                    <span class="font-weight-bold">New album</span> by Travis Scott
-                                                </h6>
-                                                <p class="text-xs text-secondary mb-0">
-                                                    <i class="fa fa-clock me-1"></i>
-                                                    1 day
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item border-radius-md" href="javascript:;">
-                                        <div class="d-flex py-1">
-                                            <div class="avatar avatar-sm bg-gradient-secondary me-3 my-auto">
-                                                <svg width="12px" height="12px" viewBox="0 0 43 36" version="1.1"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    xmlns:xlink="http://www.w3.org/1999/xlink">
-                                                    <title>credit-card</title>
-                                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                        <g transform="translate(-2169.000000, -745.000000)"
-                                                            fill="#FFFFFF" fill-rule="nonzero">
-                                                            <g transform="translate(1716.000000, 291.000000)">
-                                                                <g transform="translate(453.000000, 454.000000)">
-                                                                    <path class="color-background"
-                                                                        d="M43,10.7482083 L43,3.58333333 C43,1.60354167 41.3964583,0 39.4166667,0 L3.58333333,0 C1.60354167,0 0,1.60354167 0,3.58333333 L0,10.7482083 L43,10.7482083 Z"
-                                                                        opacity="0.593633743"></path>
-                                                                    <path class="color-background"
-                                                                        d="M0,16.125 L0,32.25 C0,34.2297917 1.60354167,35.8333333 3.58333333,35.8333333 L39.4166667,35.8333333 C41.3964583,35.8333333 43,34.2297917 43,32.25 L43,16.125 L0,16.125 Z M19.7083333,26.875 L7.16666667,26.875 L7.16666667,23.2916667 L19.7083333,23.2916667 L19.7083333,26.875 Z M35.8333333,26.875 L28.6666667,26.875 L28.6666667,23.2916667 L35.8333333,23.2916667 L35.8333333,26.875 Z">
-                                                                    </path>
-                                                                </g>
-                                                            </g>
-                                                        </g>
-                                                    </g>
-                                                </svg>
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="text-sm font-weight-normal mb-1">
-                                                    Payment successfully completed
-                                                </h6>
-                                                <p class="text-xs text-secondary mb-0">
-                                                    <i class="fa fa-clock me-1"></i>
-                                                    2 days
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -327,24 +243,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <div class="col-md-12">
                                     <form method="post" action="prosesInfoLomba.php" enctype="multipart/form-data">
                                         <div class="form-group">
-                                            <label for="posterLomba">Poster Lomba</label>
-                                            <input class="form-control" type="file" id="posterLomba" name="posterLomba" required>
+                                            <label for="gambar_poster">Poster Lomba</label>
+                                            <input class="form-control" type="file" id="gambar_poster" name="gambar_poster" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="jenisLomba">Jenis Lomba</label>
-                                            <input class="form-control" type="text" id="jenisLomba" name="jenisLomba" required>
+                                            <label for="jenis_lomba">Jenis Lomba</label>
+                                            <input class="form-control" type="text" id="jenis_lomba" name="jenis_lomba" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="tingkatLomba">Tingkat Lomba</label>
-                                            <input class="form-control" type="text" id="tingkatLomba" name="tingkatLomba" required>
+                                            <label for="tingkat_lomba_id">Tingkat Lomba</label>
+                                            <input class="form-control" type="text" id="tingkat_lomba_id" name="tingkat_lomba_id" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="tanggalPelaksanaan">Tanggal Pelaksanaan</label>
-                                            <input class="form-control" type="date" id="tanggalPelaksanaan" name="tanggalPelaksanaan" required>
+                                            <label for="tanggal_pelaksanaan">Tanggal Pelaksanaan</label>
+                                            <input class="form-control" type="date" id="tanggal_pelaksanaan" name="tanggal_pelaksanaan" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="linkPendaftaran">Link Pendaftaran</label>
-                                            <input class="form-control" type="url" id="linkPendaftaran" name="linkPendaftaran" required>
+                                            <label for="link_pendaftaran">Link Pendaftaran</label>
+                                            <input class="form-control" type="url" id="link_pendaftaran" name="link_pendaftaran" required>
                                         </div>
                                         <div class="form-group">
                                             <label for="penyelenggara">Penyelenggara</label>

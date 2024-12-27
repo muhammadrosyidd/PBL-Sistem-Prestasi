@@ -3,7 +3,7 @@ $use_driver = 'sqlsrv'; // atau 'mysql'
 $host = "DAYDREAMER"; // 'localhost'
 $username = ''; // 'sa'
 $password = ''; 
-$database = 'PencatatanPrestasi'; 
+$database = 'PRESTASI'; 
 $db; 
 
 // Cek koneksi
@@ -37,7 +37,7 @@ if ($use_driver == 'mysql') {
 }
 
 // Query untuk mengambil data dari tabel informasiLomba
-$sql = "SELECT * FROM informasiLomba";
+$sql = "SELECT * FROM infolomba";
 $result = sqlsrv_query($db, $sql);
 
 if ($result === false) {
@@ -112,7 +112,7 @@ if ($result === false) {
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../pages-SuperAdmin/dataPrestasi.html">
+                    <a class="nav-link" href="../pages-SuperAdmin/dataPrestasi.php">
                         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
                         </div>
@@ -143,7 +143,7 @@ if ($result === false) {
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
         </nav>
         <!-- End Navbar -->
-        <div class="container-fluid py-4">
+        <div class="container-fluid py-41">
             <div class="row">
                 <div class="col-12">
                     <div class="card mb-4">
@@ -172,16 +172,16 @@ if ($result === false) {
                                         while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
                                             echo "<tr>";
                                             echo "<td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>";
-                                            echo "<td class='text-center'><img src='{$row['posterLomba']}' style='width: 100px;' alt='Poster Lomba'></td>";
-                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['jenisLomba']}</td>";
-                                            echo "<td class='align-middle text-center'><span class='text-secondary text-xs font-weight-bold'>{$row['tingkatLomba']}</span></td>";
-                                            echo "<td class='text-center text-xxs font-weight-bold mb-0'>{$row['tanggalPelaksanaan']->format('d F Y')}</td>";
-                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['linkPendaftaran']}</td>";
+                                            echo "<td class='text-center'><img src='{$row['gambar_poster']}' style='width: 100px;' alt='Poster Lomba'></td>";
+                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['jenis_lomba']}</td>";
+                                            echo "<td class='align-middle text-center'><span class='text-secondary text-xs font-weight-bold'>{$row['tingkat_lomba_id']}</span></td>";
+                                            echo "<td class='text-center text-xxs font-weight-bold mb-0'>{$row['tanggal_pelaksanaan']->format('d F Y')}</td>";
+                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['link_pendaftaran']}</td>";
                                             echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['penyelenggara']}</td>";
                                             echo "<td class='align-middle text-center text-sm'>
                                                         <button type='submit' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
                                                         <form action='hapusLomba.php' method='POST' style='display:inline;'>
-                                                            <input type='hidden' name='linkPendaftaran' value='{$row['linkPendaftaran']}'>
+                                                            <input type='hidden' name='id_infoLomba' value='{$row['id_infoLomba']}'>
                                                             <button action='hapusLomba.php' type='submit' class='btn bg-gradient-danger mt-0 mb-0'>Hapus</button>
                                                         </form>
                                                     </td>";

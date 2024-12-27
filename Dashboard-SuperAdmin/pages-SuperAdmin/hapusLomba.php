@@ -3,7 +3,7 @@ $use_driver = 'sqlsrv'; // atau 'mysql'
 $host = "DAYDREAMER"; // 'localhost'
 $linkPendaftaran = ''; // 'sa'
 $password = ''; 
-$database = 'PencatatanPrestasi'; 
+$database = 'PRESTASI'; 
 $db; 
 
 if ($use_driver == 'mysql') { 
@@ -37,11 +37,11 @@ if ($use_driver == 'mysql') {
 
 // Memeriksa apakah data POST ada
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $linkPendaftaran = isset($_POST['linkPendaftaran']) ? $_POST['linkPendaftaran'] : '';
+    $id_infoLomba = isset($_POST['id_infoLomba']) ? $_POST['id_infoLomba'] : '';
 
-    if (!empty($linkPendaftaran)) {
+    if (!empty($id_infoLomba)) {
         // Ambil nama file gambar dari database
-        $querySelect = "SELECT posterLomba FROM informasiLomba WHERE linkPendaftaran = '$linkPendaftaran'";
+        $querySelect = "SELECT gambar_poster FROM infolomba WHERE id_infoLomba = '$id_infoLomba'";
         $resultSelect = $use_driver == 'mysql' ? $db->query($querySelect) : sqlsrv_query($db, $querySelect);
         
         // Check if the query was successful
@@ -52,13 +52,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($use_driver == 'mysql') {
             $row = $resultSelect->fetch_assoc();
-            $posterFile = $row['posterLomba'];
+            $posterFile = $row['gambar_poster'];
         } else if ($use_driver == 'sqlsrv') {
             $row = sqlsrv_fetch_array($resultSelect, SQLSRV_FETCH_ASSOC);
             if ($row === false) {
                 die("Error fetching data: " . sqlsrv_errors()[0]['message']);
             }
-            $posterFile = $row['posterLomba'];
+            $posterFile = $row['gambar_poster'];
         }
 
         // Hapus file gambar jika ada
@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // SQL untuk menghapus data
-        $queryDelete = "DELETE FROM informasiLomba WHERE linkPendaftaran = '$linkPendaftaran'";
+        $queryDelete = "DELETE FROM infolomba WHERE id_infoLomba = '$id_infoLomba'";
 
         // Eksekusi query sesuai driver
         if ($use_driver == 'mysql') {
