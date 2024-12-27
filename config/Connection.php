@@ -43,6 +43,6 @@ class Connection {
 }
 
 // Create a new instance of DatabaseConnection and connect.  Modified to use localhost
-$db = new Connection("localhost", "", "", "PRESTASI"); // servername diubah menjadi localhost
+$db = new Connection("DESKTOP-IVR2LTO", "", "", "PRESTASI"); // servername diubah menjadi localhost
 $conn = $db->connect();
 ?>

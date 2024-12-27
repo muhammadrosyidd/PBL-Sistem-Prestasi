@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../config/ConnectionPDO.php';
+require_once __DIR__ . '/../../config/Connection.php';  // Pastikan ini adalah koneksi SQLSRV
 
 if (!isset($_SESSION['username'])) {
   header("Location: login.php");
@@ -10,55 +10,66 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 
 try {
-  $stmt = $conn->prepare("SELECT u.*, sa.* FROM [user] u JOIN superadmin sa ON u.username = sa.username WHERE u.username = ?");
-  $stmt->execute([$username]);
-  $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+  // Query untuk mendapatkan data pengguna
+  $query = "SELECT u.*, sa.* FROM [user] u JOIN superadmin sa ON u.username = sa.username WHERE u.username = ?";
+  $stmt = sqlsrv_query($conn, $query, array(&$username));
+
+  if (!$stmt) {
+    die("Error fetching user data: " . print_r(sqlsrv_errors(), true));
+  }
+
+  $userData = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
 
   if (!$userData) {
     session_destroy();
     header("Location: login.php?error=user_not_found");
     exit();
   }
-} catch (PDOException $e) {
+} catch (Exception $e) {
   die("Error fetching user data: " . $e->getMessage());
 }
 
-// Proses Update data
+$successMessage = '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Ambil data dari form
-  $nama = $_POST['nama'];
-  $jeniskelamin = $_POST['jeniskelamin'];
-  $telepon = $_POST['telepon'];
-  $alamat = $_POST['alamat'];
-  $jabatan = $_POST['jabatan'];
-  $password = isset($_POST['password']) ? $_POST['password'] : ''; // Handle password input
+  $nama = trim($_POST['nama']);
+  $jeniskelamin = trim($_POST['jeniskelamin']);
+  $telepon = trim($_POST['telepon']);
+  $alamat = trim($_POST['alamat']);
+  $jabatan = trim($_POST['jabatan']);
+  $password = isset($_POST['password']) && !empty(trim($_POST['password'])) ? trim($_POST['password']) : null;
 
   try {
     // Update data lainnya
-    $stmt = $conn->prepare("UPDATE superadmin SET nama=?, jeniskelamin=?, telepon=?, alamat=?, jabatan=? WHERE username=?");
-    $stmt->execute([$nama, $jeniskelamin, $telepon, $alamat, $jabatan, $username]);
+    $update_query = "UPDATE superadmin SET nama = ?, jeniskelamin = ?, telepon = ?, alamat = ?, jabatan = ? WHERE username = ?";
+    $stmt_update = sqlsrv_query($conn, $update_query, array(&$nama, &$jeniskelamin, &$telepon, &$alamat, &$jabatan, &$username));
 
-    // Cek apakah password baru diisi
-    if (!empty($password)) {
-      // Hash password menggunakan MD5
-      $encoded_password = md5($password);
-      $encoded_password_bin = pack('H*', $encoded_password);
-
-      // Update password di tabel [user]
-      $update_password_query = "UPDATE [user] SET password = ? WHERE username = ?";
-      $params_password = array($encoded_password_bin, $username);
-      $stmt_password = $conn->prepare($update_password_query);
-      $stmt_password->execute($params_password);
+    if (!$stmt_update) {
+      die("Error updating data: " . print_r(sqlsrv_errors(), true));
     }
 
-    echo "<p id='success-message' style='color:green;'>Profil berhasil diperbarui!</p>";
-    echo "<script>
-            setTimeout(function() {
-                document.getElementById('success-message').style.display = 'none';
-            }, 1000); // Pesan akan hilang setelah 1 detik
-          </script>";
+    // Jika password baru diisi
+    if ($password) {
+      // Encode password dengan MD5 (32 karakter hex)
+      $encoded_password = md5($password);
+      
+      // Konversi MD5 (hexadecimal) ke VARBINARY menggunakan CONVERT
+      $encoded_password_bin = "CONVERT(VARBINARY(20), '" . $encoded_password . "', 2)";  // 2 untuk base-16 (hexadecimal)
 
-  } catch (PDOException $e) {
+      // Update password di tabel [user] menggunakan sqlsrv_query dengan CONVERT
+      $update_password_query = "UPDATE [user] SET password = $encoded_password_bin WHERE username = ?";
+      $stmt_password = sqlsrv_query($conn, $update_password_query, array(&$username));
+
+      if (!$stmt_password) {
+        die("Error updating password: " . print_r(sqlsrv_errors(), true));
+      }
+    }
+
+    // Jika berhasil, redirect ke dashboard dengan parameter sukses
+    header("Location: ../pageSuperAdmin/dashboard.php?success=true");
+    exit();  // Pastikan script berhenti eksekusi setelah redirect
+  } catch (Exception $e) {
     echo "<p style='color:red;'>Error updating profile: " . $e->getMessage() . "</p>";
   }
 }

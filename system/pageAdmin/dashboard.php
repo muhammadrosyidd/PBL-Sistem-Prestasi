@@ -46,6 +46,13 @@ try {
 <body class="g-sidenav-show   bg-gray-100">
   <!-- <h1>Dashboard Prestasi</h1> -->
 
+  <!-- Cek jika ada pesan sukses -->
+  <?php if (isset($_GET['success']) && $_GET['success'] == 'true'): ?>
+  <script type="text/javascript">
+    alert("Profile berhasil diperbarui!");
+  </script>
+  <?php endif; ?>
+  
   <?php
   // Koneksi ke database (ganti dengan detail koneksi Anda)
   require_once __DIR__ . '/../../config/ConnectionPDO.php';

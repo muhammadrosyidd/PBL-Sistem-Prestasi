@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../config/ConnectionPDO.php';
+require_once __DIR__ . '/../../config/Connection.php';  // Pastikan ini adalah koneksi SQLSRV
 
 if (!isset($_SESSION['username'])) {
   header("Location: login.php");
@@ -10,20 +10,27 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 
 try {
-  $stmt = $conn->prepare("SELECT u.*, sa.* FROM [user] u JOIN mahasiswa sa ON u.username = sa.username WHERE u.username = ?");
-  $stmt->execute([$username]);
-  $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+  // Query untuk mendapatkan data pengguna
+  $query = "SELECT u.*, sa.* FROM [user] u JOIN mahasiswa sa ON u.username = sa.username WHERE u.username = ?";
+  $stmt = sqlsrv_query($conn, $query, array(&$username));
+
+  if (!$stmt) {
+    die("Error fetching user data: " . print_r(sqlsrv_errors(), true));
+  }
+
+  $userData = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
 
   if (!$userData) {
     session_destroy();
     header("Location: login.php?error=user_not_found");
     exit();
   }
-} catch (PDOException $e) {
+} catch (Exception $e) {
   die("Error fetching user data: " . $e->getMessage());
 }
 
-//Proses Update data
+$successMessage = '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Ambil data dari form
   $nama_depan = $_POST['nama_depan'];
@@ -31,24 +38,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $jeniskelamin = $_POST['jeniskelamin'];
   $telepon = $_POST['telepon'];
   $alamat = $_POST['alamat'];
-  $prodi_id = $_POST['prodi_id'];
+  $prodi_id = (int) $_POST['prodi_id'];  // Pastikan prodi_id adalah integer
+  $password = isset($_POST['passwordBaru']) && !empty(trim($_POST['passwordBaru'])) ? trim($_POST['passwordBaru']) : null;
 
   try {
-    $stmt = $conn->prepare("UPDATE mahasiswa SET nama_depan=?, nama_belakang=?, jeniskelamin=?, telepon=?, alamat=?, prodi_id=? WHERE username=?");
-    $stmt->execute([$nama_depan, $nama_belakang, $jeniskelamin, $telepon, $alamat, $prodi_id, $username]);
+    // Update data lainnya
+    $update_query = "UPDATE mahasiswa SET nama_depan = ?, nama_belakang = ?, jeniskelamin = ?, telepon = ?, alamat = ?, prodi_id = ? WHERE username = ?";
+    $stmt_update = sqlsrv_query($conn, $update_query, array(&$nama_depan, &$nama_belakang, &$jeniskelamin, &$telepon, &$alamat, &$prodi_id, &$username));
 
-    echo "<p id='success-message' style='color:green;'>Profil berhasil diperbarui!</p>";
-    echo "<script>
-            setTimeout(function() {
-                document.getElementById('success-message').style.display = 'none';
-            }, 1000); // Pesan akan hilang setelah 1 detik
-          </script>";
-  } catch (PDOException $e) {
+    if (!$stmt_update) {
+      die("Error updating data: " . print_r(sqlsrv_errors(), true));
+    }
+
+    // Jika password baru diisi
+    if ($password) {
+      // Encode password dengan MD5 (32 karakter hex)
+      $encoded_password = md5($password);
+
+      // Konversi MD5 (hexadecimal) ke VARBINARY menggunakan CONVERT
+      $encoded_password_bin = "CONVERT(VARBINARY(20), '" . $encoded_password . "', 2)";  // 2 untuk base-16 (hexadecimal)
+
+      // Update password di tabel [user] menggunakan sqlsrv_query dengan CONVERT
+      $update_password_query = "UPDATE [user] SET password = $encoded_password_bin WHERE username = ?";
+      $stmt_password = sqlsrv_query($conn, $update_password_query, array(&$username));
+
+      if (!$stmt_password) {
+        die("Error updating password: " . print_r(sqlsrv_errors(), true));
+      }
+    }
+
+    // Jika berhasil, redirect ke dashboard dengan parameter sukses
+    header("Location: ../pageMahasiswa/dashboard.php?success=true");
+    exit();  // Pastikan script berhenti eksekusi setelah redirect
+  } catch (Exception $e) {
     echo "<p style='color:red;'>Error updating profile: " . $e->getMessage() . "</p>";
   }
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -109,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link "  href="../logout/logout.php" onclick="return confirmLogout()">
+          <a class="nav-link " href="../logout/logout.php" onclick="return confirmLogout()">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-send text-dark text-sm opacity-10"></i>
@@ -200,42 +227,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                       <input class="form-control" type="text" name="alamat" value="<?php echo htmlspecialchars($userData['alamat']); ?>">
                     </div>
                   </div>
-                </div>
-                <div class="form-group">
-                  <label for="jeniskelamin" class="form-control-label">Program Studi</label>
-                  <select class="form-control" name="prodi_id" required>
-                    <option value="1" <?php echo ($userData['prodi_id'] === '1') ? 'selected' : ''; ?>>D4 Teknik Informatika</option>
-                    <option value="2" <?php echo ($userData['prodi_id'] === '2') ? 'selected' : ''; ?>>D4 Sistem Informasi Bisnis</option>
-                    <option value="3" <?php echo ($userData['prodi_id'] === '3') ? 'selected' : ''; ?>>D2 Pengembangan Piranti Lunak Situs</option>
-                  </select>
-                </div>
-
-                <div class="col-md-12">
                   <div class="form-group">
-                    <label for="passwordBaru">Password Baru</label>
-                    <input class="form-control" type="password" name="passwordBaru">
+                    <label for="prodi_id" class="form-control-label">Program Studi</label>
+                    <select class="form-control" name="prodi_id" required>
+                      <option value="1" <?php echo ((int)$userData['prodi_id'] === 1) ? 'selected' : ''; ?>>D4 Teknik Informatika</option>
+                      <option value="2" <?php echo ((int)$userData['prodi_id'] === 2) ? 'selected' : ''; ?>>D4 Sistem Informasi Bisnis</option>
+                      <option value="3" <?php echo ((int)$userData['prodi_id'] === 3) ? 'selected' : ''; ?>>D2 Pengembangan Piranti Lunak Situs</option>
+                    </select>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="passwordBaru">Password Baru</label>
+                      <input class="form-control" type="password" name="passwordBaru">
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <button type="submit" class="btn bg-gradient-warning btn-sm">Simpan Perubahan</button>
                   </div>
                 </div>
-                <div class="col-md-12">
-                  <button type="submit" class="btn bg-gradient-warning btn-sm">Simpan Perubahan</button>
-                </div>
+              </form>
             </div>
-            </form>
           </div>
         </div>
+
       </div>
 
     </div>
-
-  </div>
   </div>
 
   <!--   Core JS Files   -->
   <script>
     function confirmLogout() {
-        return confirm("Are you sure you want to log out?");
+      return confirm("Are you sure you want to log out?");
     }
-</script>
+  </script>
   <script>
     function confirmUpdate() {
       return confirm("Apakah Anda yakin ingin menyimpan perubahan?");
