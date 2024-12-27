@@ -7,7 +7,7 @@ require_once 'Login.php';
 $username = trim($_POST['username']);
 $password = trim($_POST['password']);
 
-$connection = new Connection("DESKTOP-IVR2LTO", "", "", "PRESTASI");
+$connection = new Connection("localhost", "", "", "PRESTASI");
 if (!$connection->connect()) {
     die("Koneksi gagal: " . print_r(sqlsrv_errors(), true));
 }
