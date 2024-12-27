@@ -1,3 +1,27 @@
+<?php
+session_start();
+require_once __DIR__ . '/../../config/ConnectionPDO.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: /PBL-Sistem-Prestasi/system/pages-Sign-in/Login.php");
+    exit();
+}
+
+$username = $_SESSION['username'];
+
+try {
+    $stmt = $conn->prepare("SELECT nama FROM superadmin WHERE username = ?");
+    $stmt->execute([$username]);
+    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+    $namaPengguna = $userData ? $userData['nama'] : "Pengguna";
+} catch (PDOException $e) {
+    $namaPengguna = "Pengguna";
+    error_log("Error fetching user data: " . $e->getMessage());
+}
+
+?>
+
+<!-- ... (HTML form untuk login) ... -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -124,7 +148,7 @@
           <ul class="navbar-nav justify-content-end">
             <li class="nav-item d-flex align-items-center">
               <a
-                href="../pages-SuperAdmin/profile.html"
+                href="../profile/profileSuperAdmin.php"
                 class="nav-link text-white font-weight-bold px-0">
                 <i class="fa fa-user me-sm-1"></i>
                 <span class="d-sm-inline d-none">Profile</span>

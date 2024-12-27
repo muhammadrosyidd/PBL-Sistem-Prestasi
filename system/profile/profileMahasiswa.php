@@ -1,77 +1,53 @@
 <?php
-require_once __DIR__ . '/../../config/Connection.php';
+session_start();
+require_once __DIR__ . '/../../config/ConnectionPDO.php';
 
-// Periksa apakah form telah dikirim
+if (!isset($_SESSION['username'])) {
+  header("Location: login.php");
+  exit();
+}
+
+$username = $_SESSION['username'];
+
+try {
+  $stmt = $conn->prepare("SELECT u.*, sa.* FROM [user] u JOIN mahasiswa sa ON u.username = sa.username WHERE u.username = ?");
+  $stmt->execute([$username]);
+  $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if (!$userData) {
+    session_destroy();
+    header("Location: login.php?error=user_not_found");
+    exit();
+  }
+} catch (PDOException $e) {
+  die("Error fetching user data: " . $e->getMessage());
+}
+
+//Proses Update data
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Ambil data dari form
-  $nim = $_POST["nim"];
-  $username = $_POST["username"];
-  $namaDepan = $_POST["namaDepan"];
-  $namaBelakang = $_POST["namaBelakang"];
-  $passwordLama = $_POST["passwordLama"];
-  $passwordBaru = $_POST["passwordBaru"];
-  $jenisKelamin = $_POST["jeniskelamin"];
-  $noTelepon = $_POST["noTelepon"];
-  $alamat = $_POST["alamat"];
-  $prodi = $_POST["prodi"];
-  $angkatan = $_POST["angkatan"];
+  $nama_depan = $_POST['nama_depan'];
+  $nama_belakang = $_POST['nama_belakang'];
+  $jeniskelamin = $_POST['jeniskelamin'];
+  $telepon = $_POST['telepon'];
+  $alamat = $_POST['alamat'];
+  $prodi_id = $_POST['prodi_id'];
 
-  // Validasi data (tambahkan validasi sesuai kebutuhan)
-  if (empty($namaDepan) || empty($namaBelakang) || empty($passwordBaru) || empty($jenisKelamin) || empty($noTelepon) || empty($alamat) || empty($prodi) || empty($angkatan)) {
-    echo "Semua field harus diisi.";
-    exit; // Hentikan eksekusi script jika ada field yang kosong
-  }
+  try {
+    $stmt = $conn->prepare("UPDATE mahasiswa SET nama_depan=?, nama_belakang=?, jeniskelamin=?, telepon=?, alamat=?, prodi_id=? WHERE username=?");
+    $stmt->execute([$nama_depan, $nama_belakang, $jeniskelamin, $telepon, $alamat, $prodi_id, $username]);
 
-  // Enkripsi password baru
-  $passwordBaru = password_hash($passwordBaru, PASSWORD_DEFAULT);
-
-  // Ambil password lama dari database
-  $sql = "SELECT password FROM mahasiswa WHERE nim = ?";
-  $params = array($nim);
-  $stmt = sqlsrv_query($conn, $sql, $params);
-
-  if ($stmt === false) {
-    die(print_r(sqlsrv_errors(), true));
-  }
-
-  if (sqlsrv_has_rows($stmt)) {
-    $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-    $passwordLamaDatabase = $row["password"];
-
-    // Verifikasi password lama
-    if (!password_verify($passwordLama, $passwordLamaDatabase)) {
-      echo "Password lama salah.";
-      exit;
-    } else {
-      // Update data profile
-      $sql = "UPDATE mahasiswa SET 
-                nama_depan = ?,
-                nama_belakang = ?,
-                password = ?,
-                jenis_kelamin = ?,
-                no_telepon = ?,
-                alamat = ?,
-                prodi = ?,
-                angkatan = ?
-              WHERE nim = ?";
-      $params = array($namaDepan, $namaBelakang, $passwordBaru, $jenisKelamin, $noTelepon, $alamat, $prodi, $angkatan, $nim);
-      $stmt = sqlsrv_query($conn, $sql, $params);
-
-      if ($stmt === false) {
-        die(print_r(sqlsrv_errors(), true));
-      } else {
-        echo "<script>alert('Profile berhasil diupdate.'); window.location.href = 'dashboard.php';</script>";
-        exit;
-      }
-    }
-  } else {
-    echo "NIM tidak ditemukan.";
-    exit;
+    echo "<p id='success-message' style='color:green;'>Profil berhasil diperbarui!</p>";
+    echo "<script>
+            setTimeout(function() {
+                document.getElementById('success-message').style.display = 'none';
+            }, 1000); // Pesan akan hilang setelah 1 detik
+          </script>";
+  } catch (PDOException $e) {
+    echo "<p style='color:red;'>Error updating profile: " . $e->getMessage() . "</p>";
   }
 }
 
-// Tutup koneksi
-sqlsrv_close($conn);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -105,7 +81,7 @@ sqlsrv_close($conn);
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
         aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pages-Mahasiswa/dashboard.html "
+      <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pageMahasiswa/dashboard.html "
         target="_blank">
         <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
@@ -115,7 +91,7 @@ sqlsrv_close($conn);
     <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link " href="../pages-Mahasiswa/dashboard.html">
+          <a class="nav-link active" href="../pageMahasiswa/dashboard.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
@@ -123,9 +99,8 @@ sqlsrv_close($conn);
             <span class="nav-link-text ms-1">Dashboard</span>
           </a>
         </li>
-
         <li class="nav-item">
-          <a class="nav-link " href="../pages-Mahasiswa/dataPrestasi.html">
+          <a class="nav-link " href="../pageMahasiswa/dataPrestasi.php">
             <div
               class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
@@ -133,10 +108,30 @@ sqlsrv_close($conn);
             <span class="nav-link-text ms-1">Data Prestasi</span>
           </a>
         </li>
-
-
+        <li class="nav-item">
+          <a class="nav-link "  href="../logout/logout.php" onclick="return confirmLogout()">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="ni ni-send text-dark text-sm opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Log Out</span>
+          </a>
+        </li>
       </ul>
     </div>
+    <!-- <div class="sidenav-footer mx-3 ">
+      <div class="card card-plain shadow-none" id="sidenavCard">
+        <img class="w-50 mx-auto" src="../../assets2/img/illustrations/icon-documentation.svg" alt="sidebar_illustration">
+        <div class="card-body text-center p-3 w-100 pt-0">
+          <div class="docs-info">
+            <h6 class="mb-0">Need help?</h6>
+            <p class="text-xs font-weight-bold mb-0">Please check our docs</p>
+          </div>
+        </div>
+      </div>
+      <a href="https://www.creative-tim.com/learning-lab/bootstrap/license/argon-dashboard" target="_blank" class="btn btn-dark btn-sm w-100 mb-3">Documentation</a>
+      <a class="btn btn-primary btn-sm mb-0 w-100" href="https://www.creative-tim.com/product/argon-dashboard-pro?ref=sidebarfree" type="button">Upgrade to pro</a>
+    </div> -->
   </aside>
   <div class="main-content position-relative max-height-vh-100 h-100">
     <!-- Navbar -->
@@ -158,99 +153,94 @@ sqlsrv_close($conn);
             </div>
             <div class="card-body">
               <p class="text-uppercase text-sm">Profil Mahasiswa</p>
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">NIM Mahasiswa</label>
-                    <input class="form-control" type="text" disabled>
+              <form method="POST" action="" onsubmit="return confirmUpdate()">
+                <input type="hidden" name="nim" value="<?php echo htmlspecialchars($userData['nim']); ?>">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="nim">NIM Mahasiswa</label>
+                      <input class="form-control" type="text" name="nim" value="<?php echo htmlspecialchars($userData['nim']); ?>" readonly>
+                    </div>
                   </div>
-                </div>
-                <div class="col-md-6">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="username">Username</label>
+                      <input class="form-control" type="text" name="username" value="<?php echo htmlspecialchars($userData['username']); ?>" readonly>
+                    </div>
+                  </div>
+
                   <div class="col-md-12">
                     <div class="form-group">
-                      <label for="username" class="form-control-label">Username</label>
-                      <input class="form-control" type="text" name="username" value="<?php echo htmlspecialchars($username ?? ''); ?>" readonly required>
+                      <label for="example-text-input" class="form-control-label">Nama Depan</label>
+                      <input class="form-control" type="text" name="nama_depan" value="<?php echo htmlspecialchars($userData['nama_depan']); ?>">
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Nama Belakang</label>
+                      <input class="form-control" type="text" name="nama_belakang" value="<?php echo htmlspecialchars($userData['nama_belakang']); ?>">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="jeniskelamin" class="form-control-label">Jenis Kelamin</label>
+                    <select class="form-control" name="jeniskelamin" required>
+                      <option value="L" <?php echo ($userData['jeniskelamin'] === 'L') ? 'selected' : ''; ?>>Laki-laki</option>
+                      <option value="P" <?php echo ($userData['jeniskelamin'] === 'P') ? 'selected' : ''; ?>>Perempuan</option>
+                    </select>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Telepon</label>
+                      <input class="form-control" type="text" name="telepon" value="<?php echo htmlspecialchars($userData['telepon']); ?>">
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Alamat</label>
+                      <input class="form-control" type="text" name="alamat" value="<?php echo htmlspecialchars($userData['alamat']); ?>">
                     </div>
                   </div>
                 </div>
-
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Nama Depan</label>
-                    <input class="form-control" type="text">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Nama Belakang</label>
-                    <input class="form-control" type="text">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Password lama</label>
-                    <input class="form-control" type="text">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Password baru</label>
-                    <input class="form-control" type="email">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Jenis Kelamin</label>
-                    <select class="form-control" name="jeniskelamin" id="jeniskelamin">
-                      <option value="0">Pilih Jenis Kelamin</option>
-                      <option value="1" checked>Laki-laki</option>
-                      <option value="2">Perempuan</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">No Telepon</label>
-                    <input class="form-control" type="text">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Alamat</label>
-                    <input class="form-control" type="text">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Program Studi</label>
-                    <select class="form-control" name="prodi" id="prodi">
-                      <option value="0">Pilih Program Studi</option>
-                      <option value="1">D4 Teknik Informatika</option>
-                      <option value="2">D4 Sistem Informasi Bisnis</option>
-                      <option value="3">D2 Pengembangan Piranti Lunak Situs</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Angkatan</label>
-                    <input class="form-control" type="text">
-                  </div>
-
+                <div class="form-group">
+                  <label for="jeniskelamin" class="form-control-label">Program Studi</label>
+                  <select class="form-control" name="prodi_id" required>
+                    <option value="1" <?php echo ($userData['prodi_id'] === '1') ? 'selected' : ''; ?>>D4 Teknik Informatika</option>
+                    <option value="2" <?php echo ($userData['prodi_id'] === '2') ? 'selected' : ''; ?>>D4 Sistem Informasi Bisnis</option>
+                    <option value="3" <?php echo ($userData['prodi_id'] === '3') ? 'selected' : ''; ?>>D2 Pengembangan Piranti Lunak Situs</option>
+                  </select>
                 </div>
 
-              </div>
-              <button class="btn bg-gradient-warning btn-sm ">Simpan</button>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="passwordBaru">Password Baru</label>
+                    <input class="form-control" type="password" name="passwordBaru">
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <button type="submit" class="btn bg-gradient-warning btn-sm">Simpan Perubahan</button>
+                </div>
             </div>
+            </form>
           </div>
         </div>
-
       </div>
 
     </div>
+
+  </div>
   </div>
 
   <!--   Core JS Files   -->
+  <script>
+    function confirmLogout() {
+        return confirm("Are you sure you want to log out?");
+    }
+</script>
+  <script>
+    function confirmUpdate() {
+      return confirm("Apakah Anda yakin ingin menyimpan perubahan?");
+    }
+  </script>
   <script src="../../assets2/js/core/popper.min.js"></script>
   <script src="../../assets2/js/core/bootstrap.min.js"></script>
   <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>

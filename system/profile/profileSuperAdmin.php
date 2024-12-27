@@ -10,7 +10,7 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 
 try {
-  $stmt = $conn->prepare("SELECT u.*, sa.* FROM [user] u JOIN admin sa ON u.username = sa.username WHERE u.username = ?");
+  $stmt = $conn->prepare("SELECT u.*, sa.* FROM [user] u JOIN superadmin sa ON u.username = sa.username WHERE u.username = ?");
   $stmt->execute([$username]);
   $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   try {
     // Update data lainnya
-    $stmt = $conn->prepare("UPDATE admin SET nama=?, jeniskelamin=?, telepon=?, alamat=?, jabatan=? WHERE username=?");
+    $stmt = $conn->prepare("UPDATE superadmin SET nama=?, jeniskelamin=?, telepon=?, alamat=?, jabatan=? WHERE username=?");
     $stmt->execute([$nama, $jeniskelamin, $telepon, $alamat, $jabatan, $username]);
 
     // Cek apakah password baru diisi

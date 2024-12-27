@@ -1,4 +1,25 @@
+<?php
+session_start();
+require_once __DIR__ . '/../../config/ConnectionPDO.php';
 
+if (!isset($_SESSION['username'])) {
+  header("Location: /PBL-Sistem-Prestasi/system/pages-Sign-in/Login.php");
+  exit();
+}
+
+$username = $_SESSION['username'];
+
+try {
+  $stmt = $conn->prepare("SELECT nama FROM mahasiswa WHERE username = ?");
+  $stmt->execute([$username]);
+  $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+  $namaPengguna = $userData ? $userData['nama'] : "Pengguna";
+} catch (PDOException $e) {
+  $namaPengguna = "Pengguna";
+  error_log("Error fetching user data: " . $e->getMessage());
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -56,7 +77,15 @@
             <span class="nav-link-text ms-1">Data Prestasi</span>
           </a>
         </li>
-
+        <li class="nav-item">
+          <a class="nav-link "  href="../logout/logout.php" onclick="return confirmLogout()">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="ni ni-send text-dark text-sm opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Log Out</span>
+          </a>
+        </li>
       </ul>
     </div>
     <!-- <div class="sidenav-footer mx-3 ">
@@ -93,7 +122,7 @@
             </div>
           </div>
           <ul class="navbar-nav  justify-content-end">
-          <li class="nav-item d-flex align-items-center">
+            <li class="nav-item d-flex align-items-center">
               <a href="/PBL-Sistem-Prestasi/system/profile/profileMahasiswa.php" class="nav-link text-white font-weight-bold px-0">
                 <i class="fa fa-user me-sm-1"></i>
                 <span class="d-sm-inline d-none">Profile</span>
@@ -386,11 +415,16 @@
           </div>
         </div>
       </div>
-     
+
     </div>
   </main>
 
   <!--   Core JS Files   -->
+  <script>
+    function confirmLogout() {
+        return confirm("Are you sure you want to log out?");
+    }
+</script>
   <script src="../../assets2/js/core/popper.min.js"></script>
   <script src="../../assets2/js/core/bootstrap.min.js"></script>
   <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>

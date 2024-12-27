@@ -13,11 +13,11 @@ abstract class AbstractLogin {
 
 class Login extends AbstractLogin {
     public function authenticate($username, $password) {
-        $encoded_password = md5($password); // Encode password to MD5
+        $encoded_password = md5($password); // Tetap menggunakan MD5 (TIDAK AMAN!)
         $encoded_password_bin = pack('H*', $encoded_password); // Convert MD5 hex to binary
 
-        $sql = "SELECT role FROM [user] WHERE username = ? AND password = ?";
-        $params = array(trim($username), $encoded_password_bin);
+        $sql = "SELECT password, role FROM [user] WHERE username = ?";
+        $params = array(trim($username));
 
         $stmt = sqlsrv_query($this->conn, $sql, $params);
 
@@ -27,7 +27,10 @@ class Login extends AbstractLogin {
 
         if (sqlsrv_has_rows($stmt)) {
             $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
-            return $row['role'];
+            // Bandingkan password MD5 (TIDAK AMAN!)
+            if ($encoded_password_bin === $row['password']) {  
+                return $row['role'];
+            }
         }
         return null;
     }

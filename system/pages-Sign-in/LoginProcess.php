@@ -1,42 +1,41 @@
 <?php
-ob_start(); 
+ob_start();
 session_start();
-require_once __DIR__ . '/../../config/Connection.php'; // Pastikan path ini benar
-require_once 'Login.php'; // Pastikan path ini benar
+require_once __DIR__ . '/../../config/Connection.php';
+require_once 'Login.php';
 
-// Ambil data dari form
 $username = trim($_POST['username']);
 $password = trim($_POST['password']);
 
-// Koneksi ke database
 $connection = new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI");
 if (!$connection->connect()) {
     die("Koneksi gagal: " . print_r(sqlsrv_errors(), true));
 }
 
-// Gunakan kelas Login untuk autentikasi
 $login = new Login($connection);
 $role = $login->authenticate($username, $password);
 
 if ($role !== null) {
-    // Simpan role ke session dan redirect berdasarkan role
-    $_SESSION['role'] = $role;
+    $_SESSION['username'] = $username; // Simpan hanya username
+    $_SESSION['role'] = $role; // Simpan role untuk kontrol akses
 
     switch ($role) {
-        case "1":
+        case 1: // Gunakan case 1, 2, 3, bukan string "1", "2", "3"
             header("Location: ../../system/pageSuperAdmin/dashboard.php");
-            exit(); // Pastikan setelah header() tidak ada output
-        case "2":
+            break;
+        case 2:
             header("Location: ../../system/pageAdmin/dashboard.php");
-            exit();
-        case "3":
+            break;
+        case 3:
             header("Location: ../../system/pageMahasiswa/dashboard.php");
-            exit();
+            break;
         default:
             echo "Role tidak dikenali.";
     }
+    exit(); // Pastikan exit() ada setelah header()
 } else {
     echo "<p style='color: red;'>Username atau password salah.</p>";
 }
+
 ob_end_flush();
 ?>
