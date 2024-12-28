@@ -1,120 +1,144 @@
 <?php
 require_once __DIR__ . '/../../config/Connection.php';
 
-// Memeriksa apakah data POST ada
+$db = new Connection("localhost", "", "", "PRESTASI"); // Use localhost as the server
+$conn = $db->connect();  // Get the connection resource
+// Ambil data mahasiswa dari database
+$sqlMahasiswa = "SELECT nim, nama_depan, nama_belakang FROM mahasiswa";
+$stmtMahasiswa = sqlsrv_query($conn, $sqlMahasiswa);
+
+// Ambil data dosen dari tabel dosen
+$sqlDosen = "SELECT dosen_id, nama FROM dosen";
+$stmtDosen = sqlsrv_query($conn, $sqlDosen);
+
+if ($stmtMahasiswa === false) {
+  die("Query failed: " . print_r(sqlsrv_errors(), true));
+}
+if ($stmtMahasiswa === false) {
+  die("Query failed: " . print_r(sqlsrv_errors(), true));
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  // Data untuk tabel prestasi
-  $judul = $_POST['judul'];
+  // Ambil input dari form
+  $judul = $_POST['judul']; // Judul kompetisi
+  $nim = $_POST['nim'];
+  $peran_mahasiswa_id = $_POST['peran_mahasiswa_id']; // Ambil peran mahasiswa dari input
   $tempat = $_POST['tempat'];
-  $tingkat_lomba_id = $_POST['tingkat_lomba_id'];
   $link_kompetisi = $_POST['link_kompetisi'];
   $jumlah_peserta = $_POST['jumlah_peserta'];
-  $peringkat_id = $_POST['peringkat_id'];
   $tanggal_mulai = $_POST['tanggal_mulai'];
   $tanggal_akhir = $_POST['tanggal_akhir'];
+  $nomor_surat_tugas = $_POST['nomor_surat_tugas'];
+  $tanggal_surat_tugas = $_POST['tanggal_surat_tugas'];
+  $tingkat_lomba_id = $_POST['tingkat_lomba_id'];
+  $peringkat_id = $_POST['peringkat_id'];
 
-  // Data untuk mahasiswa dan dosen
-  $mahasiswa = isset($_POST['mahasiswa']) ? $_POST['mahasiswa'] : [];
-  $peranMahasiswa = isset($_POST['peran_mahasiswa_id']) ? $_POST['peran_mahasiswa_id'] : [];
-  $pembimbing = isset($_POST['dosen_id']) ? $_POST['dosen_id'] : [];
-  $peranPembimbing = isset($_POST['peran_dosen_id']) ? $_POST['peran_dosen_id'] : [];
+  // Cek apakah Judul Kompetisi ada di tabel kategori
+  $sql = "SELECT kategori_id FROM kategori WHERE nama_kategori = ?";
+  $params = [$judul];
+  $stmt = sqlsrv_query($conn, $sql, $params);  // Use $conn instead of $db
 
-  // Mengatur file upload
-  $uploadDir = 'uploads/';
-  $fileSuratTugas = null;
-  $fileSertifikat = null;
-  $fotoKegiatan = null;
-  $proposal = null;
-
-  // Mengupload file jika ada
-  if (isset($_FILES['surat_tugas']) && $_FILES['surat_tugas']['error'] == 0) {
-    $fileSuratTugas = $uploadDir . basename($_FILES['surat_tugas']['name']);
-    move_uploaded_file($_FILES['surat_tugas']['tmp_name'], $fileSuratTugas);
+  if ($stmt === false) {
+    die("Query failed: " . print_r(sqlsrv_errors(), true));
   }
 
-  if (isset($_FILES['sertifikat']) && $_FILES['sertifikat']['error'] == 0) {
-    $fileSertifikat = $uploadDir . basename($_FILES['sertifikat']['name']);
-    move_uploaded_file($_FILES['sertifikat']['tmp_name'], $fileSertifikat);
+  $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+
+  if ($row) {
+    // Jika ada kecocokan, ambil kategori_id
+    $kategori_id = $row['kategori_id'];
+    header("Location: dataPrestasi.php");
+  } else {
+    // Jika tidak ada kecocokan, tambahkan kategori baru
+    $sql_insert = "INSERT INTO kategori (nama_kategori) VALUES (?)";
+    $params_insert = [$judul];
+    $stmt_insert = sqlsrv_query($conn, $sql_insert, $params_insert);  // Use $conn instead of $db
+
+    if ($stmt_insert === false) {
+      die("Insert failed: " . print_r(sqlsrv_errors(), true));
+    }
+
+    // Ambil kategori_id yang baru ditambahkan
+    $kategori_id_query = sqlsrv_query($conn, "SELECT SCOPE_IDENTITY() AS kategori_id");  // Use $conn instead of $db
+    if ($kategori_id_query === false) {
+      die("Query to get new kategori_id failed: " . print_r(sqlsrv_errors(), true));
+    }
+
+    $row_kategori_id = sqlsrv_fetch_array($kategori_id_query, SQLSRV_FETCH_ASSOC);
+    if ($row_kategori_id) {
+      $kategori_id = $row_kategori_id['kategori_id'];
+    } else {
+      die("Failed to retrieve new kategori_id.");
+    }
   }
 
-  if (isset($_FILES['foto_kegiatan']) && $_FILES['foto_kegiatan']['error'] == 0) {
-    $fotoKegiatan = $uploadDir . basename($_FILES['foto_kegiatan']['name']);
-    move_uploaded_file($_FILES['foto_kegiatan']['tmp_name'], $fotoKegiatan);
-  }
+  // Proses upload file
+  $targetDir = "dokumen/";
+  $surat_tugas = $targetDir . uniqid() . '_' . basename($_FILES["surat_tugas"]["name"]);
+  $sertifikat = $targetDir . uniqid() . '_' . basename($_FILES["sertifikat"]["name"]);
+  $foto_kegiatan = $targetDir . uniqid() . '_' . basename($_FILES["foto_kegiatan"]["name"]);
 
-  if (isset($_FILES['proposal']) && $_FILES['proposal']['error'] == 0) {
-    $proposal = $uploadDir . basename($_FILES['proposal']['name']);
-    move_uploaded_file($_FILES['proposal']['tmp_name'], $proposal);
-  }
+  // Cek upload file dan simpan ke database
+  if (
+    move_uploaded_file($_FILES["surat_tugas"]["tmp_name"], $surat_tugas) &&
+    move_uploaded_file($_FILES["sertifikat"]["tmp_name"], $sertifikat) &&
+    move_uploaded_file($_FILES["foto_kegiatan"]["tmp_name"], $foto_kegiatan)
+  ) {
 
-  // Pastikan koneksi database valid
-  $conn = (new Connection("LAPTOP-PUB4O093", "", "", "PRESTASI"))->connect();
+    // Masukkan data ke tabel prestasi
+    $sqlPrestasi = "INSERT INTO prestasi (judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, verifikasi_status) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '1', 'Belum Terverifikasi')";
+    $paramsPrestasi = [$judul, $tempat, $link_kompetisi, $tanggal_mulai, $tanggal_akhir, $jumlah_peserta, $kategori_id, $tingkat_lomba_id, $peringkat_id];
+    $stmtPrestasi = sqlsrv_query($conn, $sqlPrestasi, $paramsPrestasi);  // Use $conn instead of $db
 
-  if ($conn) {
-    // Query untuk menyimpan data prestasi
-    $queryPrestasi = "INSERT INTO prestasi (judul, tempat_kompetisi, tingkat_kompetisi, link_kompetisi, jumlah_peserta, peringkat_juara, tanggal_mulai, tanggal_akhir) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    if ($stmtPrestasi === false) {
+      die("Insert to prestasi failed: " . print_r(sqlsrv_errors(), true));
+    }
 
-    $stmtPrestasi = sqlsrv_prepare($conn, $queryPrestasi, [
-      &$judul,
-      &$tempat,
-      &$tingkat_lomba_id,
-      &$link_kompetisi,
-      &$jumlah_peserta,
-      &$peringkat_id,
-      &$tanggal_mulai,
-      &$tanggal_akhir
-    ]);
+    // Ambil prestasi_id yang baru ditambahkan
+    $prestasi_id_query = sqlsrv_query($conn, "SELECT SCOPE_IDENTITY() AS prestasi_id");  // Use $conn instead of $db
+    if ($prestasi_id_query === false) {
+      die("Query to get new prestasi_id failed: " . print_r(sqlsrv_errors(), true));
+    }
 
-    if (sqlsrv_execute($stmtPrestasi)) {
-      $prestasiId = sqlsrv_insert_id($conn);
+    $row_prestasi_id = sqlsrv_fetch_array($prestasi_id_query, SQLSRV_FETCH_ASSOC);
+    if ($row_prestasi_id) {
+      $prestasi_id = $row_prestasi_id['prestasi_id'];
 
-      // Simpan data mahasiswa ke tabel presma
-      if (!empty($mahasiswa)) {
-        foreach ($mahasiswa as $index => $mhs) {
-          $queryPresma = "INSERT INTO presma (nim, prestasi_id, peran_mahasiswa_id) VALUES (?, ?, ?)";
-          $stmtPresma = sqlsrv_prepare($conn, $queryPresma, [
-            &$mhs,
-            &$prestasiId,
-            &$peranMahasiswa[$index]
-          ]);
-          sqlsrv_execute($stmtPresma);
-        }
+      // Cek apakah NIM ada di tabel mahasiswa
+      $checkMahasiswaQuery = "SELECT * FROM mahasiswa WHERE nim = ?";
+      $checkMahasiswaStmt = sqlsrv_query($conn, $checkMahasiswaQuery, [$nim]);
+
+      if ($checkMahasiswaStmt === false) {
+        die("Query failed: " . print_r(sqlsrv_errors(), true));
       }
 
-      // Simpan data dosen ke tabel dospem
-      if (!empty($pembimbing)) {
-        foreach ($pembimbing as $index => $dosen) {
-          $queryDospem = "INSERT INTO dospem (dosen_id, prestasi_id, peran_dosen_id) VALUES (?, ?, ?)";
-          $stmtDospem = sqlsrv_prepare($conn, $queryDospem, [
-            &$dosen,
-            &$prestasiId,
-            &$peranPembimbing[$index]
-          ]);
-          sqlsrv_execute($stmtDospem);
+      if (sqlsrv_fetch_array($checkMahasiswaStmt, SQLSRV_FETCH_ASSOC) !== null) {
+        // Jika NIM ada, masukkan ke tabel presma
+        $sql_presma = "INSERT INTO presma (nim, prestasi_id, peran_mahasiswa_id) VALUES (?, ?, ?)";
+        $params_presma = [$nim, $prestasi_id, $peran_mahasiswa_id];
+        $stmt_presma = sqlsrv_query($conn, $sql_presma, $params_presma);
+
+        if ($stmt_presma === false) {
+          die("Insert to presma failed: " . print_r(sqlsrv_errors(), true));
+        } else {
+          echo "Data berhasil dimasukkan ke tabel presma.";
         }
-      }
-
-      // Simpan dokumen ke tabel dokumen
-      $queryDokumen = "INSERT INTO dokumen (prestasi_id, surat_tugas, sertifikat, foto_kegiatan, proposal) VALUES (?, ?, ?, ?, ?)";
-      $stmtDokumen = sqlsrv_prepare($conn, $queryDokumen, [
-        &$prestasiId,
-        &$fileSuratTugas,
-        &$fileSertifikat,
-        &$fotoKegiatan,
-        &$proposal
-      ]);
-
-      if (sqlsrv_execute($stmtDokumen)) {
-        echo "Data berhasil disimpan!";
       } else {
-        echo "Error: Gagal menyimpan dokumen.";
+        echo "NIM tidak ditemukan di tabel mahasiswa.";
       }
     } else {
-      echo "Error: Gagal menyimpan data prestasi.";
+      die("Failed to retrieve new prestasi_id.");
     }
+    // Masukkan data ke dalam tabel dospem
+    $sqlDospem = "INSERT INTO dospem (dosen_id, prestasi_id, peran_dosen_id) VALUES (?, ?, ?)";
+    $paramsDospem = [$dosen_id, $prestasi_id, $peran_dosen_id];
+    $stmtDospem = sqlsrv_query($conn, $sqlDospem, $paramsDospem);
+
+    // Redirect atau tampilkan pesan sukses
+    header("Location: dataPrestasi.php");
   } else {
-    echo "Error: Koneksi database gagal.";
+    echo "Maaf, terjadi kesalahan saat mengupload file.";
   }
 }
 ?>
@@ -233,12 +257,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                       <input class="form-control" type="text" name="nim" id="nim" required>
                     </div>
                   </div>
-                  <!-- <div class="col-md-6">
+                  <div class="col-md-6">
                     <div class="form-group">
-                      <label for="peran" class="form-control-label">Peran</label>
-                      <input class="form-control" value="Ketua Tim" name="peran" id="peran" readonly>
+                      <label for="peran_mahasiswa_id" class="form-control-label">Peran</label>
+                      <input class="form-control" value="1" name="peran_mahasiswa_id" id="peran_mahasiswa_id" readonly>
                     </div>
-                  </div> -->
+                  </div>
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="judul" class="form-control-label">Judul Kompetisi</label>
@@ -255,9 +279,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="form-group">
                       <label for="tingkat_lomba_id">Tingkat Kompetisi</label>
                       <select class="form-control" name="tingkat_lomba_id" required>
-                        <option value="Regional">Regional</option>
-                        <option value="Nasional">Nasional</option>
-                        <option value="Internasional">Internasional</option>
+                        <option value="1">Regional</option>
+                        <option value="2">Nasional</option>
+                        <option value="3">Internasional</option>
                       </select>
                     </div>
                   </div>
@@ -277,12 +301,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="form-group">
                       <label for="peringkat_id">Peringkat</label>
                       <select class="form-control" name="peringkat_id" required>
-                        <option value="Juara 1">Juara 1</option>
-                        <option value="Juara 2">Juara 2</option>
-                        <option value="Juara 3">Juara 3</option>
-                        <option value="Harapan 1">Harapan 1</option>
-                        <option value="Harapan 2">Harapan 2</option>
-                        <option value="Harapan 3">Harapan 3</option>
+                        <option value="1">Juara 1</option>
+                        <option value="2">Juara 2</option>
+                        <option value="3">Juara 3</option>
+                        <option value="4">Harapan 1</option>
+                        <option value="5">Harapan 2</option>
+                        <option value="6">Harapan 3</option>
                       </select>
                     </div>
                   </div>
@@ -303,137 +327,154 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="noSuratTugas" class="form-control-label">No Surat Tugas</label>
-                      <input class="form-control" type="text" name="noSuratTugas" id="noSuratTugas" required>
+                      <label for="nomor_surat_tugas" class="form-control-label">No Surat Tugas</label>
+                      <input class="form-control" type="text" name="nomor_surat_tugas" id="nomor_surat_tugas" required>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="tanggalSuratTugas" class="form-control-label">Tanggal Surat Tugas</label>
-                      <input class="form-control" type="date" name="tanggalSuratTugas" id="tanggalSuratTugas" required>
+                      <label for="tanggal_surat_tugas" class="form-control-label">Tanggal Surat Tugas</label>
+                      <input class="form-control" type="date" name="tanggal_surat_tugas" id="tanggal_surat_tugas" required>
                     </div>
                   </div>
                   <div class="mb-3">
-                    <label for="fileSuratTugas" class="form-label">File Surat Tugas</label>
-                    <input class="form-control" type="file" name="fileSuratTugas" id="fileSuratTugas" required>
+                    <label for="surat_tugas" class="form-label">File Surat Tugas</label>
+                    <input class="form-control" type="file" name="surat_tugas" id="surat_tugas" required>
                   </div>
                   <div class="mb-3">
-                    <label for="fileSertifikat" class="form-label">File Sertifikat</label>
-                    <input class="form-control" type="file" name="fileSertifikat" id="fileSertifikat" required>
+                    <label for="sertifikat" class="form-label">File Sertifikat</label>
+                    <input class="form-control" type="file" name="sertifikat" id="sertifikat" required>
                   </div>
                   <div class="mb-3">
-                    <label for="fotoKegiatan" class="form-label">Foto Kegiatan</label>
-                    <input class="form-control" type="file" name="fotoKegiatan" id="fotoKegiatan" required>
+                    <label for="foto_kegiatan" class="form-label">Foto Kegiatan</label>
+                    <input class="form-control" type="file" name="foto_kegiatan" id="foto_kegiatan" required>
                   </div>
-                </div>
-                <div class="container mt-4">
-                  <div class="card">
-                    <div class="card-header">
-                      <h5 class="mb-0"><i class="fas fa-user-graduate"></i> Data Mahasiswa</h5>
+                  <div class="container mt-4">
+                    <div class="card">
+                      <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-user-graduate"></i> Data Mahasiswa</h5>
+                      </div>
+                      <div class="card-body">
+                        <div class="table-responsive">
+                          <table id="mahasiswaTable" class="table table-striped">
+                            <thead>
+                              <tr>
+                                <th class="text-center">No</th>
+                                <th>Mahasiswa</th>
+                                <th>Peran</th>
+                                <th class="text-center">Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr class="text-center">
+                                <td class="text-center">1</td>
+                                <td class="text-center">
+                                  <select name="mahasiswa[]" class="form-control" multiple>
+                                    <option>Pilih Mahasiswa</option>
+                                    <?php while ($row = sqlsrv_fetch_array($stmtMahasiswa, SQLSRV_FETCH_ASSOC)) { ?>
+                                      <option value="<?php echo $row['nim']; ?>"><?php echo $row['nim'] . ' - ' . $row['nama_depan'] . ' ' . $row['nama_belakang']; ?></option>
+                                    <?php } ?>
+                                  </select>
+                                </td>
+                                <td class="text-center">
+                                  <select name="peran_mahasiswa_id" class="form-control">
+                                    <option>Pilih Peran</option>
+                                    <option value="2">Anggota</option>
+                                    <option value="3">Personal</option>
+                                  </select>
+                                </td>
+                                <td class="text-center">
+                                  <button type="button" class="btn btn-danger mt-0 mb-0" onclick="deleteRow(this)">
+                                    <i class="fas fa-times"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <button type="button" class="btn btn-primary" onclick="addRow()">
+                            <i class="fas fa-plus"></i> Tambah Mahasiswa
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div class="card-body">
-                      <div class="table-responsive">
-                        <table id="mahasiswaTable" class="table table-striped">
-                          <thead>
-                            <tr>
-                              <th class="text-center">No</th>
-                              <th>Mahasiswa</th>
-                              <th>Peran</th>
-                              <th class="text-center">Aksi</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr class="text-center">
-                              <td class="text-center">1</td>
-                              <td class="text-center">
-                                <input type="text" name="mahasiswa[]" class="form-control">
-                                <!-- <select name="mahasiswa[]" class="form-control"> -->
-                                  <!-- <option>Pilih Mahasiswa</option> -->
-                                  <!-- Tambahkan opsi secara dinamis dari database -->
-                                <!-- </select> -->
-                              </td>
-                              <td class="text-center">
-                                <input type="text" name="peran[]" class="form-control">
-                                <!-- <select name="peran[]" class="form-control"> -->
-                                  <!-- <option>Pilih Peran</option> -->
-                                  <!-- Tambahkan opsi secara dinamis -->
-                                <!-- </select> -->
-                              </td>
-                              <td class="text-center">
-                                <button type="button" class="btn btn-danger mt-0 mb-0" onclick="deleteRow(this)">
-                                  <i class="fas fa-times"></i>
-                                </button>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                        <button type="button" class="btn btn-primary" onclick="addRow()">
-                          <i class="fas fa-plus"></i> Tambah Mahasiswa
-                        </button>
+                  </div>
+                  <div class="container mt-4">
+                    <div class="card">
+                      <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Data Pembimbing</h5>
+                      </div>
+                      <div class="card-body">
+                        <div class="table-responsive">
+                          <table id="pembimbingTable" class="table table-striped">
+                            <thead>
+                              <tr>
+                                <th class="text-center">No</th>
+                                <th>Pembimbing</th>
+                                <th>Peran</th>
+                                <th class="text-center">Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr class="text-center">
+                                <td class="text-center">1</td>
+                                <td class="text-center">
+                                  <select name="pembimbing[]" class="form-control">
+                                    <?php while ($row = sqlsrv_fetch_array($stmtDosen, SQLSRV_FETCH_ASSOC)) { ?>
+                                      <option value="<?php echo $row['dosen_id']; ?>">
+                                        <?php echo $row['nama']; ?>
+                                      </option>
+                                    <?php } ?>
+                                  </select>
+                                </td>
+                                <td class="text-center">
+                                  <select name="peran_dosen_id" class="form-control">
+                                    <option>Pilih Peran</option>
+                                    <option value="1">Melakukan pembinaan kegiatan mahasiswa di <br>
+                                      bidang akademik (PA) dan kemahasiswaan <br>
+                                      (BEM, Maperwa, dan lain-lain)</option>
+                                    <option value="2">Membimbing mahasiswa menghasilkan
+                                      produk saintifik bereputasi dan mendapat
+                                      pengakuan tingkat Internasional</option>
+                                    <option value="3">Membimbing mahasiswa menghasilkan
+                                      produk saintifik bereputasi dan mendapat
+                                      pengakuan tingkat Nasional</option>
+                                    <option value="4">Membimbing mahasiswa mengikuti kompetisi
+                                      dibidang akademik dan kemahasiswaan
+                                      bereputasi dan mencapai juara tingkat
+                                      Internasional</option>
+                                    <option value="5">Membimbing mahasiswa mengikuti kompetisi
+                                      dibidang akademik dan kemahasiswaan
+                                      bereputasi dan mencapai juara tingkat
+                                      Nasional</option>
+                                  </select>
+                                </td>
+                                <td class="text-center">
+                                  <button type="button" class="btn btn-danger mt-0 mb-0" onclick="deleteRow1(this)">
+                                    <i class="fas fa-times"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <button type="button" class="btn btn-primary" onclick="addRow1()">
+                            <i class="fas fa-plus"></i> Tambah Pembimbing
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="container mt-4">
-                  <div class="card">
-                    <div class="card-header">
-                      <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Data Pembimbing</h5>
-                    </div>
-                    <div class="card-body">
-                      <div class="table-responsive">
-                        <table id="pembimbingTable" class="table table-striped">
-                          <thead>
-                            <tr>
-                              <th class="text-center">No</th>
-                              <th>Pembimbing</th>
-                              <th>Peran</th>
-                              <th class="text-center">Aksi</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr class="text-center">
-                              <td class="text-center">1</td>
-                              <td class="text-center">
-                                <input type="text" name="pembimbing[]" class="form-control">
-                                <!-- <select name="pembimbing[]" class="form-control"> -->
-                                  <!-- <option>Pilih Pembimbing</option> -->
-                                  <!-- Tambahkan opsi secara dinamis -->
-                                <!-- </select> -->
-                              </td>
-                              <td class="text-center">
-                                <input type="text" name="pembimbing_peran[]" class="form-control">
-                                <!-- <select name="pembimbing_peran[]" class="form-control"> -->
-                                  <!-- <option>Pilih Peran</option> -->
-                                  <!-- Tambahkan opsi secara dinamis -->
-                                <!-- </select> -->
-                              </td>
-                              <td class="text-center">
-                                <button type="button" class="btn btn-danger mt-0 mb-0" onclick="deleteRow(this)">
-                                  <i class="fas fa-times"></i>
-                                </button>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                        <button type="button" class="btn btn-primary" onclick="addRow1()">
-                          <i class="fas fa-plus"></i> Tambah Pembimbing
-                        </button>
-                      </div>
-                    </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <button type="submit" class="btn btn-warning btn-sm">Submit</button>
                   </div>
                 </div>
+              </form>
             </div>
-            <div class="row">
-              <div class="col-md-12">
-                <button type="submit" class="btn btn-warning btn-sm">Submit</button>
-              </div>
-            </div>
-            </form>
           </div>
         </div>
       </div>
     </div>
-  </div>
   </div>
   <script>
     function addRow() {
@@ -451,9 +492,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       cell1.innerHTML = rowCount + 1; // Perbarui nomor baris
 
       // Pusatkan elemen select
-      cell2.innerHTML = `<input type="text" name="mahasiswa[]" class="form-control">`;
+      cell2.innerHTML = `
+        <select name="mahasiswa[]" class="form-control">
+            <option>Pilih Mahasiswa</option>
+            <!-- Tambahkan opsi secara dinamis dari database -->
+        </select>`;
 
-      cell3.innerHTML = `<input type="text" name="peran[]" class="form-control">`;
+      cell3.innerHTML = `
+        <select name="peran[]" class="form-control">
+            <option>Pilih Peran</option>
+            <!-- Tambahkan opsi secara dinamis -->
+        </select>`;
 
       // Pusatkan tombol hapus
       cell4.className = "text-center"; // Tambahkan kelas text-center untuk sel 4
@@ -492,9 +541,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       cell1.innerHTML = rowCount + 1; // Perbarui nomor baris
 
       // Pusatkan elemen select
-      cell2.innerHTML = `<input type="text" name="pembimbing[]" class="form-control">`;
+      cell2.innerHTML = `
+            <select name="pembimbing[]" class="form-control">
+                <option>Pilih Pembimbing</option>
+                <!-- Tambahkan opsi secara dinamis dari database -->
+            </select>`;
 
-      cell3.innerHTML = `<input type="text" name="pembimbing_peran[]" class="form-control">`;
+      cell3.innerHTML = `
+            <select name="pembimbing_peran[]" class="form-control">
+                <option>Pilih Peran</option>
+                <!-- Tambahkan opsi secara dinamis -->
+            </select>`;
 
       // Pusatkan tombol hapus
       cell4.className = "text-center"; // Tambahkan kelas text-center untuk sel 4
