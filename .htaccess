@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    Options +FollowSymLinks
+    RewriteEngine On
+
+    # Jika permintaan adalah root folder, arahkan ke landingPage.php
+    RewriteRule ^$ /PBL-SISTEM-PRESTASI/landingPage.php [L]
+
+    # Jika permintaan bukan untuk folder atau file yang ada, arahkan ke landingPage.php
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ /PBL-SISTEM-PRESTASI/landingPage.php [L]
+
+    # Pastikan file CSS, JS, dan file statis lainnya dapat diakses
+    RewriteRule ^PBL-SISTEM-PRESTASI/(.*)\.(css|js|jpg|jpeg|png|gif|svg)$ /PBL-SISTEM-PRESTASI/$1.$2 [L]
+</IfModule>

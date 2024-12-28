@@ -1,22 +1,13 @@
 <?php
-$use_driver = 'mysql'; // mysql atau sqlsrv 
-$host = "localhost"; //'localhost'; 
-$username = 'root'; //'sa'; 
+$use_driver = 'sqlsrv'; // Use sqlsrv driver
+$host = "localhost";
+$username = '';
 $password = '';
-$database = 'prestasi';
+$database = 'PRESTASI';
 $db;
 
-if ($use_driver == 'mysql') {
-    try {
-        $db = new mysqli($host, $username, $password, $database);
-
-        if ($db->connect_error) {
-            die('Connection DB failed: ' . $db->connect_error);
-        }
-    } catch (Exception $e) {
-        die($e->getMessage());
-    }
-} else if ($use_driver == 'sqlsrv') {
+// Koneksi ke database
+if ($use_driver == 'sqlsrv') {
     $credential = [
         'Database' => $database,
         'UID' => $username,
@@ -28,61 +19,46 @@ if ($use_driver == 'mysql') {
 
         if (!$db) {
             $msg = sqlsrv_errors();
-            die($msg[0]['message']);
+            die("Koneksi gagal: " . $msg[0]['message']);
         }
     } catch (Exception $e) {
-        die($e->getMessage());
+        die("Koneksi gagal: " . $e->getMessage());
     }
 }
 
-$id_infolomba;
+$id_infolomba = null;
+$jenis_lomba = '';
+$tingkat_lomba_id = '';
+$tanggal_pelaksanaan = '';
+$link_pendaftaran = '';
+$penyelenggara = '';
+$gambar_poster = '';
+
 // Fetch user data if available for editing
 if (isset($_GET['id_infoLomba'])) {
     $id_infolomba = $_GET['id_infoLomba'];
 
-    // Buat query SQL
+    // Query untuk mendapatkan data
     $query = "SELECT * FROM infolomba WHERE id_infoLomba = ?";
-    
-    // Persiapkan statement
-    $stmt = $db->prepare($query);
+    $params = [$id_infolomba];
+    $stmt = sqlsrv_query($db, $query, $params);
+
     if ($stmt) {
-        // Bind parameter
-        $stmt->bind_param("i", $id_infolomba); // "i" menunjukkan tipe integer
-        
-        // Eksekusi statement
-        $stmt->execute();
-        
-        // Ambil hasil query
-        $result = $stmt->get_result();
-        
-        // Fetch data dari hasil query
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
+        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        if ($row) {
             $jenis_lomba = $row['jenis_lomba'];
             $tingkat_lomba_id = $row['tingkat_lomba_id'];
-            $tanggal_pelaksanaan = $row['tanggal_pelaksanaan'];
+            $tanggal_pelaksanaan = $row['tanggal_pelaksanaan']->format('Y-m-d'); // Format tanggal
             $link_pendaftaran = $row['link_pendaftaran'];
             $penyelenggara = $row['penyelenggara'];
             $gambar_poster = $row['gambar_poster'];
-        } else {
-            // Handle the case where no record is found
-            $jenis_lomba = '';
-            $tingkat_lomba_id = '';
-            $tanggal_pelaksanaan = '';
-            $link_pendaftaran = '';
-            $penyelenggara = '';
-            $gambar_poster = '';
         }
-        
-        // Tutup statement
-        $stmt->close();
     } else {
-        echo "Error dalam mempersiapkan query: " . $conn->error;
+        die("Error dalam eksekusi query: " . print_r(sqlsrv_errors(), true));
     }
 }
 
-
-// Handle the form submission for updating competition data
+// Validate and update the data if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get data from form
     $jenis_lomba = $_POST['jenis_lomba'];
@@ -91,47 +67,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $link_pendaftaran = $_POST['link_pendaftaran'];
     $penyelenggara = $_POST['penyelenggara'];
 
-    // $id_now = $_GET['id_infoLomba'];
-    // var_dump($id_now);
-    // die();
-
+    // Validate tanggal_pelaksanaan format (ensure it's a valid date)
+   
 
     // Handle file upload for gambar_poster
     if (isset($_FILES['gambar_poster']) && $_FILES['gambar_poster']['error'] == UPLOAD_ERR_OK) {
+        // Check file type (example: only images)
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($_FILES['gambar_poster']['type'], $allowed_types)) {
+            die("File poster harus berupa gambar (JPG, PNG, GIF).");
+        }
+
+        // Check file size (example: max 2MB)
+        if ($_FILES['gambar_poster']['size'] > 2 * 1024 * 1024) {
+            die("File poster terlalu besar. Maksimal ukuran file adalah 2MB.");
+        }
+
+        // Define upload path and move the file
         $gambar_poster = $_FILES['gambar_poster']['name'];
-        move_uploaded_file($_FILES['gambar_poster']['tmp_name'], "Poster Lomba/" . $gambar_poster);
-    } else {
-        // Handle the case where no file was uploaded or there was an error
-        $gambar_poster = ''; // or handle it as needed
+        $upload_path = "Poster Lomba/" . $gambar_poster;
+        if (!move_uploaded_file($_FILES['gambar_poster']['tmp_name'], $upload_path)) {
+            die("Gagal mengunggah file poster ke: $upload_path");
+        }
     }
 
     // Update data competition
-    $update_lomba_query = "UPDATE infolomba SET jenis_lomba = ?, tingkat_lomba_id = ?, tanggal_pelaksanaan = ?, link_pendaftaran = ?, penyelenggara = ?, gambar_poster = ? WHERE id_infoLomba = ?";
-    $stmt_update_lomba = $db->prepare($update_lomba_query);
-    if ($stmt_update_lomba) {
-        // Bind parameters
-        $stmt_update_lomba->bind_param("iissssi", $jenis_lomba, $tingkat_lomba_id, $tanggal_pelaksanaan, $link_pendaftaran, $penyelenggara, $gambar_poster, $id_infoLomba);
-        
-        // Execute the update
-        if ($stmt_update_lomba->execute()) {
-            echo "Data updated successfully.";
-            
-        } else {
-            echo "Error updating data: " . $stmt_update_lomba->error;
-        }
-        // Close the statement
-        $stmt_update_lomba->close();
-    } else {
-        echo "Error preparing update query: " . $db->error;
-    }
+    $update_lomba_query = "UPDATE infolomba 
+                           SET jenis_lomba = ?, tingkat_lomba_id = ?, tanggal_pelaksanaan = ?, link_pendaftaran = ?, penyelenggara = ?, gambar_poster = ? 
+                           WHERE id_infoLomba = ?";
+    $params_update = [$jenis_lomba, $tingkat_lomba_id, $tanggal_pelaksanaan, $link_pendaftaran, $penyelenggara, $gambar_poster, $id_infolomba];
+    $stmt_update_lomba = sqlsrv_query($db, $update_lomba_query, $params_update);
 
-    // Redirect ke halaman informasiLomba.php setelah berhasil
-    header("Location: informasiLomba.php");
-    exit(); // Pastikan script dihentikan setelah redirect
+    if ($stmt_update_lomba) {
+        $rows_affected = sqlsrv_rows_affected($stmt_update_lomba);
+        if ($rows_affected === 0) {
+            die("Tidak ada baris yang diperbarui. Periksa apakah data sudah sesuai.");
+        }
+        // Redirect ke halaman informasiLomba.php setelah berhasil
+        header("Location: dataInformasiLomba.php");
+        exit(); // Pastikan script dihentikan setelah redirect
+    } else {
+        die("Error updating data: " . print_r(sqlsrv_errors(), true));
+    }
 }
-// Menyelesaikan output buffering
-ob_end_flush();
+
+// Tutup koneksi database
+sqlsrv_close($db);
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -141,7 +125,7 @@ ob_end_flush();
     <link rel="apple-touch-icon" sizes="76x76" href="../../assets2/img/jti.png">
     <link rel="icon" type="image/png" href="../../assets2/img/jti.png">
     <title>
-        Update Pengguna
+        Update Informasi Lomba
     </title>
     <!--     Fonts and icons     -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
@@ -160,90 +144,9 @@ ob_end_flush();
         style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg'); background-position-y: 50%;">
         <span class="mask bg-gradient-warning opacity-5"></span>
     </div>
-    <aside
-        class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 "
-        id="sidenav-main">
-        <div class="sidenav-header">
-            <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
-                aria-hidden="true" id="iconSidenav"></i>
-            <a class="navbar-brand m-0"
-                href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html " target="_blank">
-                <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100"
-                    alt="main_logo">
-                <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
-            </a>
-        </div>
-        <hr class="horizontal dark mt-0">
-        <div class="w-auto" id="sidenav-collapse-main">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dashboard.html">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="../pages-SuperAdmin/dataPengguna.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Pengguna</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataDosen.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Dosen</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Mahasiswa</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Prestasi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="informasiLomba.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-app text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Informasi Lomba</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="laporan.html">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-world-2 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Laporan</span>
-                    </a>
-                </li>
-
-            </ul>
-        </div>
-
-    </aside>
+    <?php
+  include_once __DIR__ . '/../layout/sidebarSuper.php';
+  ?>
     <div class="main-content position-relative max-height-vh-100 h-100">
         <!-- Navbar -->
 
@@ -258,7 +161,7 @@ ob_end_flush();
                         <p class="mb-0">Update Informasi Lomba</p>
                     </div>
                     <div class="card-body">
-                        <form action="editInfoLomba.php" method="POST" enctype="multipart/form-data">
+                        <form action="" method="POST" enctype="multipart/form-data">
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">

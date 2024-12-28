@@ -1,39 +1,9 @@
 <?php
-$use_driver = 'mysql'; // mysql atau sqlsrv 
-$host = "localhost"; //'localhost'; 
-$username = 'root'; //'sa'; 
-$password = '';
-$database = 'prestasi';
-$db;
+require_once __DIR__ . '/../../config/Connection.php';
 
-if ($use_driver == 'mysql') {
-    try {
-        $db = new mysqli('localhost', $username, $password, $database);
-
-        if ($db->connect_error) {
-            die('Connection DB failed: ' . $db->connect_error);
-        }
-    } catch (Exception $e) {
-        die($e->getMessage());
-    }
-} else if ($use_driver == 'sqlsrv') {
-    $credential = [
-        'Database' => $database,
-        'UID' => $username,
-        'PWD' => $password
-    ];
-
-    try {
-        $db = sqlsrv_connect($host, $credential);
-
-        if (!$db) {
-            $msg = sqlsrv_errors();
-            die($msg[0]['message']);
-        }
-    } catch (Exception $e) {
-        die($e->getMessage());
-    }
-}
+// Inisialisasi koneksi ke database
+  // Gantilah dengan password SQL Server Anda
+$conn = $db->connect();
 
 // Memeriksa apakah data POST ada
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -81,31 +51,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Simpan informasi ke database
             $sql = "INSERT INTO infolomba (gambar_poster, jenis_lomba, tingkat_lomba_id, tanggal_pelaksanaan, link_pendaftaran, penyelenggara)
-                VALUES (?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?)";
 
-            if ($stmt = $db->prepare($sql)) {
-                // Bind parameter
-                $stmt->bind_param("ssssss", $targetFile, $jenis_lomba, $tingkat_lomba_id, $tanggal_pelaksanaan, $link_pendaftaran, $penyelenggara);
+            $params = array($targetFile, $jenis_lomba, $tingkat_lomba_id, $tanggal_pelaksanaan, $link_pendaftaran, $penyelenggara);
 
-                // Eksekusi statement
-                if ($stmt->execute()) {
-                    header("Location: informasiLomba.php");
-                } else {
-                    echo "Error: " . $stmt->error;
-                }
-
-                // Tutup statement
-                $stmt->close();
-            } else {
-                echo "Error: " . $db->error;
+            // Eksekusi query dengan sqlsrv_query
+            $stmt = sqlsrv_prepare($conn, $sql, $params);
+            if ($stmt === false) {
+                die(print_r(sqlsrv_errors(), true));
             }
+
+            if (sqlsrv_execute($stmt)) {
+                echo "Data berhasil disimpan!";
+                header("Location: dataInformasiLomba.php"); // Redirect ke halaman lain setelah sukses
+            } else {
+                echo "Error: " . print_r(sqlsrv_errors(), true);
+            }
+
+            sqlsrv_free_stmt($stmt);
+        } else {
+            echo "Maaf, terjadi kesalahan dalam proses upload file.";
         }
     }
 }
+
 // Menutup koneksi
-if ($use_driver == 'mysql') {
-    $db->close();
-} else if ($use_driver == 'sqlsrv') {
-    sqlsrv_close($db);
-}
+$db->close();
 ?>

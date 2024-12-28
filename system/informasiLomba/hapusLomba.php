@@ -1,19 +1,21 @@
 <?php
-$use_driver = 'mysql'; // Pilihan driver ('mysql' untuk MySQL)
+$use_driver = 'sqlsrv'; // Pilihan driver ('mysql' untuk MySQL, 'sqlsrv' untuk SQL Server)
 $host = "localhost"; // Host database
-$username = 'root'; // Username database
+$username = ''; // Username database
 $password = ''; // Password database
-$database = 'prestasi'; // Nama database
+$database = 'PRESTASI'; // Nama database
 
 $db = null; // Inisialisasi variabel koneksi
 
-// Membuka koneksi ke MySQL
-if ($use_driver == 'mysql') {
+// Membuka koneksi ke SQL Server
+if ($use_driver == 'sqlsrv') {
     try {
-        $db = new mysqli($host, $username, $password, $database);
-        
-        if ($db->connect_error) {
-            die('Connection to database failed: ' . $db->connect_error);
+        // Koneksi ke SQL Server
+        $connectionInfo = array( "Database"=>$database, "UID"=>$username, "PWD"=>$password);
+        $db = sqlsrv_connect( $host, $connectionInfo );
+
+        if( !$db ) {
+            die('Connection to database failed: ' . print_r(sqlsrv_errors(), true));
         }
     } catch (Exception $e) {
         die($e->getMessage());
@@ -27,47 +29,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!empty($link_pendaftaran)) {
         // Menggunakan prepared statement untuk keamanan
         $querySelect = "SELECT gambar_poster FROM infolomba WHERE link_pendaftaran = ?";
-        $stmtSelect = $db->prepare($querySelect);
-        
+        $stmtSelect = sqlsrv_prepare($db, $querySelect, array(&$link_pendaftaran));
+
         if ($stmtSelect) {
-            $stmtSelect->bind_param("s", $link_pendaftaran);
-            $stmtSelect->execute();
-            $resultSelect = $stmtSelect->get_result();
-            $row = $resultSelect->fetch_assoc();
+            $resultSelect = sqlsrv_execute($stmtSelect);
+            if ($resultSelect) {
+                $row = sqlsrv_fetch_array($stmtSelect, SQLSRV_FETCH_ASSOC);
 
-            $posterFile = $row['gambar_poster'] ?? null;
+                $posterFile = $row['gambar_poster'] ?? null;
 
-            // Hapus file gambar jika ada
-            if (!empty($posterFile)) {
-                $filePath = 'Poster Lomba/' . $posterFile; // Sesuaikan dengan path folder Anda
-                if (file_exists($filePath)) {
-                    unlink($filePath); // Menghapus file
+                // Hapus file gambar jika ada
+                if (!empty($posterFile)) {
+                    $filePath = 'Poster Lomba/' . $posterFile; // Sesuaikan dengan path folder Anda
+                    if (file_exists($filePath)) {
+                        unlink($filePath); // Menghapus file
+                    }
                 }
-            }
 
-            $stmtSelect->close();
+                sqlsrv_free_stmt($stmtSelect);
+            } else {
+                die("Error executing SELECT query: " . print_r(sqlsrv_errors(), true));
+            }
         } else {
-            die("Error preparing SELECT query: " . $db->error);
+            die("Error preparing SELECT query: " . print_r(sqlsrv_errors(), true));
         }
 
         // SQL untuk menghapus data
         $queryDelete = "DELETE FROM infolomba WHERE link_pendaftaran = ?";
-        $stmtDelete = $db->prepare($queryDelete);
+        $stmtDelete = sqlsrv_prepare($db, $queryDelete, array(&$link_pendaftaran));
 
         if ($stmtDelete) {
-            $stmtDelete->bind_param("s", $link_pendaftaran);
-            $stmtDelete->execute();
-
-            if ($stmtDelete->affected_rows > 0) {
-                header("Location: informasiLomba.php");
+            $resultDelete = sqlsrv_execute($stmtDelete);
+            if ($resultDelete) {
+                // Redirect setelah berhasil menghapus
+                header("Location: dataInformasiLomba.php");
                 exit();
             } else {
                 echo "Error: Data not found or could not be deleted.";
             }
 
-            $stmtDelete->close();
+            sqlsrv_free_stmt($stmtDelete);
         } else {
-            die("Error preparing DELETE query: " . $db->error);
+            die("Error preparing DELETE query: " . print_r(sqlsrv_errors(), true));
         }
     } else {
         echo "Lomba tidak ditemukan.";
@@ -76,6 +79,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Menutup koneksi
 if ($db !== null) {
-    $db->close();
+    sqlsrv_close($db);
 }
 ?>

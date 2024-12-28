@@ -1,6 +1,6 @@
 <?php
 
-$folderPath = '../system/informasiLomba/Poster Lomba/';
+$folderPath = 'system/informasiLomba/Poster Lomba/';
 
 
 $files = scandir($folderPath);

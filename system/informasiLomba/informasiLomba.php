@@ -1,9 +1,9 @@
 <?php
-$use_driver = 'mysql';
+$use_driver = 'sqlsrv';
 $host = "localhost";
-$username = 'root';
+$username = '';
 $password = '';
-$database = 'prestasi';
+$database = 'PRSTASI';
 $db;
 
 // Cek koneksi

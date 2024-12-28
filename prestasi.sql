@@ -146,13 +146,14 @@ CREATE TABLE [prestasi] (
 
 CREATE TABLE infolomba (
     id_infoLomba INT PRIMARY KEY IDENTITY(1,1),
-    gambar_poster VARCHAR(MAX) NULL,
+    gambar_poster VARCHAR(255) NULL, -- Menyimpan file gambar biner
     jenis_lomba VARCHAR(100) NOT NULL,
     tingkat_lomba_id INT NOT NULL, 
     tanggal_pelaksanaan DATE NOT NULL,
     link_pendaftaran VARCHAR(255) NOT NULL,
     penyelenggara VARCHAR(100) NOT NULL,
-    CONSTRAINT FK_tingkatLomba FOREIGN KEY (tingkat_lomba_id) REFERENCES tingkatLomba(tingkat_lomba_id)
+    CONSTRAINT FK_tingkatLomba FOREIGN KEY (tingkat_lomba_id) REFERENCES tingkatLomba(tingkat_lomba_id),
+    --CONSTRAINT chk_tanggal_pelaksanaan CHECK (tanggal_pelaksanaan <= GETDATE()) -- Opsional, jika ingin membatasi tanggal
 );
 
 CREATE TABLE [presma] (
@@ -308,3 +309,5 @@ VALUES
     (3, 3, 3),
     (4, 4, 4),
     (1, 5, 5);
+
+select * from infolomba

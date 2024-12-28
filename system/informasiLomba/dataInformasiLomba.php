@@ -1,6 +1,6 @@
 <?php
 $use_driver = 'sqlsrv'; // atau 'mysql'
-$host = "DESKTOP-IVR2LTO"; // 'localhost'
+$host = "localhost"; // 'localhost'
 $username = ''; // 'sa'
 $password = '';
 $database = 'PRESTASI';
@@ -68,76 +68,9 @@ if ($result === false) {
 
 <body class="g-sidenav-show bg-gray-100">
     <div class="min-height-300 bg-gradient-warning position-absolute w-100"></div>
-    <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main">
-        <div class="sidenav-header">
-            <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-            <a class="navbar-brand m-0" href="https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html" target="_blank">
-                <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
-                <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
-            </a>
-        </div>
-        <hr class="horizontal dark mt-0">
-        <div class="w-auto" id="sidenav-collapse-main">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="../pages-SuperAdmin/dashboard.html">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../pages-SuperAdmin/dataPengguna.php">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Pengguna</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../pages-SuperAdmin/dataDosen.php">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Dosen</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../pages-SuperAdmin/dataMahasiswa.php">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Mahasiswa</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../pages-SuperAdmin/dataPrestasi.html">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Prestasi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="informasiLomba.php">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-app text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Informasi Lomba</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="laporan.html">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-world-2 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Laporan</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </aside>
+    <?php
+  include_once __DIR__ . '/../layout/sidebarSuper.php';
+  ?>
     <main class="main-content position-relative border-radius-lg ">
         <!-- Navbar -->
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
@@ -172,17 +105,17 @@ if ($result === false) {
                                         while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
                                             echo "<tr>";
                                             echo "<td class='text-center text-xxs font-weight-bold mb-0'>{$no}</td>";
-                                            echo "<td class='text-center'><img src='{$row['posterLomba']}' style='width: 100px;' alt='Poster Lomba'></td>";
-                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['jenisLomba']}</td>";
-                                            echo "<td class='align-middle text-center'><span class='text-secondary text-xs font-weight-bold'>{$row['tingkatLomba']}</span></td>";
-                                            echo "<td class='text-center text-xxs font-weight-bold mb-0'>{$row['tanggalPelaksanaan']->format('d F Y')}</td>";
-                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['linkPendaftaran']}</td>";
+                                            echo "<td class='text-center'><img src='{$row['gambar_poster']}' style='width: 100px;' alt='Poster Lomba'></td>";
+                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['jenis_lomba']}</td>";
+                                            echo "<td class='align-middle text-center'><span class='text-secondary text-xs font-weight-bold'>{$row['tingkat_lomba_id']}</span></td>";
+                                            echo "<td class='text-center text-xxs font-weight-bold mb-0'>{$row['tanggal_pelaksanaan']->format('d F Y')}</td>";
+                                            echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['link_pendaftaran']}</td>";
                                             echo "<td class='text-center text-xs font-weight-bold mb-0'>{$row['penyelenggara']}</td>";
                                             echo "<td class='align-middle text-center text-sm'>
-                                                        <button type='submit' class='btn bg-gradient-primary mt-0 mb-0'>Edit</button>
-                                                        <form action='hapusLomba.php' method='POST' style='display:inline;'>
-                                                            <input type='hidden' name='linkPendaftaran' value='{$row['linkPendaftaran']}'>
-                                                            <button action='hapusLomba.php' type='submit' class='btn bg-gradient-danger mt-0 mb-0'>Hapus</button>
+                                                        <button type='button' class='btn bg-gradient-primary' onclick=\"window.location.href='editInfoLomba.php?id_infoLomba={$row['id_infoLomba']}'\">Edit</button>
+                                                        <form action='hapusLomba.php' method='POST' style='display:inline;' onsubmit='return confirmDelete();'>
+                                                            <input type='hidden' name='link_pendaftaran' value='{$row['link_pendaftaran']}'>
+                                                             <button type='submit' class='btn bg-gradient-danger' >Hapus</button>
                                                         </form>
                                                     </td>";
                                             echo "</tr>";
@@ -200,6 +133,11 @@ if ($result === false) {
     </main>
 
     <!--   Core JS Files   -->
+    <script>
+    function confirmDelete() {
+      return confirm("Apakah Anda yakin ingin menghapus Informasi ini?");
+    }
+  </script>
     <script src="../../assets2/js/core/popper.min.js"></script>
     <script src="../../assets2/js/core/bootstrap.min.js"></script>
     <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>

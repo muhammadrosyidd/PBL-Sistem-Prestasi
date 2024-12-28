@@ -1,9 +1,9 @@
 <?php
-$use_driver = 'mysql'; // atau 'mysql'
+$use_driver = 'sqlsrv'; // atau 'mysql'
 $host = "localhost"; // 'localhost'
-$username = 'root'; // 'sa'
+$username = ''; // 'sa'
 $password = '';
-$database = 'prestasi';
+$database = 'PRESTASI';
 $db;
 
 if ($use_driver == 'mysql') {
@@ -34,6 +34,7 @@ if ($use_driver == 'mysql') {
         die($e->getMessage());
     }
 }
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ambil data dari form
     $jenis_lomba = $_POST['jenis_lomba'];
@@ -41,23 +42,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tanggal_pelaksanaan = $_POST['tanggal_pelaksanaan'];
     $link_pendaftaran = $_POST['link_pendaftaran'];
     $penyelenggara = $_POST['penyelenggara'];
-    $targetFile = $_POST['gambar_poster'];
+    $gambar_poster = $_FILES['gambar_poster']['name']; // Ubah dari $_POST ke $_FILES untuk gambar_poster
 
-    // SQL untuk memasukkan data
-    $query = "INSERT INTO infolomba (gambar_poster, jenis_lomba, tingkat_lomba_id, tanggal_pelaksanaan, link_pendaftaran, penyelenggara)
-              VALUES ('$targetFile', '$jenis_lomba', '$tingkat_lomba_id', '$tanggal_pelaksanaan', '$link_pendaftaran', '$penyelenggara')";
+    // Validasi tanggal_pelaksanaan
+    if (strtotime($tanggal_pelaksanaan) < strtotime(date("Y-m-d"))) {
+        echo "Tanggal pelaksanaan harus lebih besar atau sama dengan hari ini.";
+        exit();
+    }
 
+    // Handle file upload for gambar_poster
+    if ($_FILES['gambar_poster']['error'] == UPLOAD_ERR_OK) {
+        // Validasi file gambar
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!in_array($_FILES['gambar_poster']['type'], $allowed_types)) {
+            echo "File poster harus berupa gambar (JPG, PNG, GIF).";
+            exit();
+        }
+
+        // Cek ukuran file
+        if ($_FILES['gambar_poster']['size'] > 2 * 1024 * 1024) { // Maksimal 2MB
+            echo "File poster terlalu besar. Maksimal ukuran file adalah 2MB.";
+            exit();
+        }
+
+        // Tentukan path upload
+        $upload_path = "Poster Lomba/" . $_FILES['gambar_poster']['name'];
+        if (!move_uploaded_file($_FILES['gambar_poster']['tmp_name'], $upload_path)) {
+            echo "Gagal mengunggah file poster.";
+            exit();
+        }
+    }
+
+    // SQL untuk memasukkan data dengan prepared statement (untuk MySQL)
     if ($use_driver == 'mysql') {
-        if ($db->query($query) === TRUE) {
-            header("Location: informasiLomba.php"); // Redirect ke informasiLomba.php setelah berhasil
+        $stmt = $db->prepare("INSERT INTO infolomba (gambar_poster, jenis_lomba, tingkat_lomba_id, tanggal_pelaksanaan, link_pendaftaran, penyelenggara)
+                              VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $gambar_poster, $jenis_lomba, $tingkat_lomba_id, $tanggal_pelaksanaan, $link_pendaftaran, $penyelenggara);
+
+        if ($stmt->execute()) {
+            header("Location: dataInformasiLomba.php");
             exit();
         } else {
-            echo "Error: " . $db->error;
+            echo "Error: " . $stmt->error;
         }
-    } else if ($use_driver == 'sqlsrv') {
-        $stmt = sqlsrv_query($db, $query);
+    }
+    // SQL untuk memasukkan data dengan prepared statement (untuk SQL Server)
+    else if ($use_driver == 'sqlsrv') {
+        $query = "INSERT INTO infolomba (gambar_poster, jenis_lomba, tingkat_lomba_id, tanggal_pelaksanaan, link_pendaftaran, penyelenggara)
+                  VALUES (?, ?, ?, ?, ?, ?)";
+        $params = [$gambar_poster, $jenis_lomba, $tingkat_lomba_id, $tanggal_pelaksanaan, $link_pendaftaran, $penyelenggara];
+
+        $stmt = sqlsrv_query($db, $query, $params);
+
         if ($stmt) {
-            header("Location: informasiLomba.php"); // Redirect ke informasiLomba.php setelah berhasil
+            header("Location: dataInformasiLomba.php");
             exit();
         } else {
             $msg = sqlsrv_errors();
@@ -66,14 +104,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/jti.png">
-    <link rel="icon" type="image/png" href="../assets/img/jti.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="../../assets2/img/jti.png">
+    <link rel="icon" type="image/png" href="../../assets2/img/jti.png">
     <title>
         Input Informasi Lomba
     </title>
@@ -84,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="/assets/css/tambahmhs.css">
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <!-- CSS Files -->
-    <link id="pagestyle" href="../assets/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
+    <link id="pagestyle" href="../../assets2/css/argon-dashboard.css?v=2.1.0" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -92,90 +131,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg'); background-position-y: 50%;">
         <span class="mask bg-gradient-warning opacity-5"></span>
     </div>
-    <aside
-        class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 "
-        id="sidenav-main">
-        <div class="sidenav-header">
-            <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
-                aria-hidden="true" id="iconSidenav"></i>
-            <a class="navbar-brand m-0"
-                href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html " target="_blank">
-                <img src="../assets/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100"
-                    alt="main_logo">
-                <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
-            </a>
-        </div>
-        <hr class="horizontal dark mt-0">
-        <div class="w-auto" id="sidenav-collapse-main">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dashboard.html">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Pengguna</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataDosen.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Dosen</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Mahasiswa</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="../pages-SuperAdmin/dataPrestasi.html">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Data Prestasi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="informasiLomba.php">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-app text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Informasi Lomba</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link " href="laporan.html">
-                        <div
-                            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="ni ni-world-2 text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Laporan</span>
-                    </a>
-                </li>
-
-            </ul>
-        </div>
-
-    </aside>
+    <?php
+  include_once __DIR__ . '/../layout/sidebarSuper.php';
+  ?>
     <div class="main-content position-relative max-height-vh-100 h-100">
 
         <div class="card shadow-lg mx-4 card-profile-bottom">
@@ -271,10 +229,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             }
         </script>
-        <script src="../assets/js/core/popper.min.js"></script>
-        <script src="../assets/js/core/bootstrap.min.js"></script>
-        <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
-        <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
+        <script src="../../assets2/js/core/popper.min.js"></script>
+        <script src="../../assets2/js/core/bootstrap.min.js"></script>
+        <script src="../../assets2/js/plugins/perfect-scrollbar.min.js"></script>
+        <script src="../../assets2/js/plugins/smooth-scrollbar.min.js"></script>
         <script>
             var win = navigator.platform.indexOf('Win') > -1;
             if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -287,7 +245,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Github buttons -->
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-        <script src="../assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+        <script src="../../assets2/js/argon-dashboard.min.js?v=2.1.0"></script>
 </body>
 
 </html>
