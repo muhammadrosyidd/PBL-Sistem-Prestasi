@@ -18,14 +18,14 @@ GO
 USE PRESTASI;
 GO
 
---TABEL USER--
+-- TABEL USER --
 CREATE TABLE [user] ( 
     username VARCHAR(20) PRIMARY KEY, 
     password VARBINARY(20) NOT NULL, 
     role INT NOT NULL 
 );
 
---TABEL SUPERADMIN--
+-- TABEL SUPERADMIN --
 CREATE TABLE [superadmin] (
     super_admin_id INT PRIMARY KEY IDENTITY(1,1), 
     username VARCHAR(20) NOT NULL, 
@@ -37,7 +37,7 @@ CREATE TABLE [superadmin] (
     FOREIGN KEY (username) REFERENCES [user](username)
 );
 
---table admin--
+-- TABEL ADMIN --
 CREATE TABLE [admin] (
     admin_id INT PRIMARY KEY IDENTITY(1,1), 
     username VARCHAR(20) NOT NULL, 
@@ -49,13 +49,13 @@ CREATE TABLE [admin] (
     FOREIGN KEY (username) REFERENCES [user](username)
 );
 
---table prodi--
+-- TABEL PRODI --
 CREATE TABLE [prodi] (
     prodi_id INT PRIMARY KEY IDENTITY(1,1),
     nama_prodi VARCHAR(50) NOT NULL
 );
 
---table dosen--
+-- TABEL DOSEN --
 CREATE TABLE [dosen] (
     dosen_id INT PRIMARY KEY IDENTITY(1,1), 
     nidn VARCHAR(20) NOT NULL, 
@@ -63,13 +63,13 @@ CREATE TABLE [dosen] (
     telepon VARCHAR(15) 
 );
 
---table mahasiswa
+-- TABEL MAHASISWA --
 CREATE TABLE [mahasiswa] (
     nim VARCHAR(20) PRIMARY KEY,   
     username VARCHAR(20) NOT NULL, 
     nama_depan VARCHAR(75) NOT NULL,
     nama_belakang VARCHAR(75) NOT NULL,
-	prodi_id INT NOT NULL,
+    prodi_id INT NOT NULL,
     jeniskelamin CHAR(1) NOT NULL,
     telepon VARCHAR(15) NOT NULL,
     alamat VARCHAR(100) NOT NULL,
@@ -77,106 +77,103 @@ CREATE TABLE [mahasiswa] (
     FOREIGN KEY (prodi_id) REFERENCES [prodi](prodi_id)
 );
 
---table kategori--
+-- TABEL KATEGORI --
 CREATE TABLE [kategori] (
     kategori_id INT PRIMARY KEY IDENTITY(1,1), 
     nama_kategori VARCHAR(50) NOT NULL
 );
 
---table tingkat lomba--
+-- TABEL TINGKAT LOMBA --
 CREATE TABLE [tingkatLomba] (
     tingkat_lomba_id INT PRIMARY KEY IDENTITY(1,1), 
     nama_tingkat VARCHAR(20) NOT NULL,
-	poin_tingkat INT NOT NULL
+    poin_tingkat INT NOT NULL
 );
 
---table peringkat--
+-- TABEL PERINGKAT --
 CREATE TABLE [peringkat] (
     peringkat_id INT PRIMARY KEY IDENTITY(1,1), 
     nama_peringkat VARCHAR(50) NOT NULL, 
     poin_peringkat INT NOT NULL
 );
 
---table dokumen--
+-- TABEL DOKUMEN --
 CREATE TABLE [dokumen] (
     dokumen_id INT PRIMARY KEY IDENTITY(1,1), 
-    flyer VARCHAR(MAX) NOT NULL, 
-    sertifikat VARCHAR(MAX) NOT NULL, 
-    foto_kegiatan VARCHAR(MAX) NOT NULL,
-    surat_tugas VARCHAR(MAX) NOT NULL, 
+    flyer VARBINARY(MAX) NOT NULL, 
+    sertifikat VARBINARY(MAX) NOT NULL, 
+    foto_kegiatan VARBINARY(MAX) NOT NULL,
+    surat_tugas VARBINARY(MAX) NOT NULL, 
     nomor_surat_tugas VARCHAR(50) NULL,
-    proposal VARCHAR(MAX) NULL, 
-    komentar VARCHAR(MAX) NULL,
-    tanggal_surat_tugas DATE NOT NULL
+    proposal VARBINARY(MAX) NULL, 
+    komentar VARCHAR(MAX) NULL
 );
 
-
--- Membuat tabel peran mahasiswa
+-- TABEL PERAN MAHASISWA --
 CREATE TABLE [peran_mahasiswa] (
     peran_mahasiswa_id INT PRIMARY KEY IDENTITY(1,1),
     nama_peran VARCHAR(50) NOT NULL
 );
 
--- Membuat tabel peran dosen
+-- TABEL PERAN DOSEN --
 CREATE TABLE [peran_dosen] (
     peran_dosen_id INT PRIMARY KEY IDENTITY(1,1),
     nama_peran VARCHAR(MAX) NOT NULL
 );
 
---table prestasi--
+-- TABEL PRESTASI --
 CREATE TABLE [prestasi] (
     prestasi_id INT PRIMARY KEY IDENTITY(1,1), 
     judul VARCHAR(255) NOT NULL,  
-	tempat VARCHAR (255) NOT NULL,
-	link_kompetisi VARCHAR (255) NOT NULL,
+    tempat VARCHAR(255) NOT NULL,
+    link_kompetisi VARCHAR(255) NOT NULL,
     tanggal_mulai DATE NOT NULL, 
-	tanggal_akhir DATE NOT NULL,
-	jumlah_peserta VARCHAR(50),
+    tanggal_akhir DATE NOT NULL,
+    jumlah_peserta VARCHAR(50),
     kategori_id INT NOT NULL, 
     tingkat_lomba_id INT NOT NULL, 
     peringkat_id INT NOT NULL, 
     dokumen_id INT NULL, 
-	verifikasi_status VARCHAR(20) DEFAULT 'Belum Terverifikasi',
-	tanggal_input DATETIME DEFAULT GETDATE()
+    verifikasi_status VARCHAR(20) DEFAULT 'Belum Terverifikasi',
+    tanggal_input DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (kategori_id) REFERENCES [kategori](kategori_id), 
     FOREIGN KEY (tingkat_lomba_id) REFERENCES [tingkatLomba](tingkat_lomba_id), 
     FOREIGN KEY (peringkat_id) REFERENCES [peringkat](peringkat_id), 
     FOREIGN KEY (dokumen_id) REFERENCES [dokumen](dokumen_id)
 );
 
+-- TABEL INFOLOMBA --
 CREATE TABLE infolomba (
     id_infoLomba INT PRIMARY KEY IDENTITY(1,1),
-    gambar_poster VARCHAR(255) NULL, -- Menyimpan file gambar biner
+    gambar_poster VARCHAR(255) NULL,
     jenis_lomba VARCHAR(100) NOT NULL,
     tingkat_lomba_id INT NOT NULL, 
     tanggal_pelaksanaan DATE NOT NULL,
     link_pendaftaran VARCHAR(255) NOT NULL,
-    penyelenggara VARCHAR(100) NOT NULL,
-    CONSTRAINT FK_tingkatLomba FOREIGN KEY (tingkat_lomba_id) REFERENCES tingkatLomba(tingkat_lomba_id),
-    --CONSTRAINT chk_tanggal_pelaksanaan CHECK (tanggal_pelaksanaan <= GETDATE()) -- Opsional, jika ingin membatasi tanggal
+    penyelenggara VARCHAR(100) NOT NULL
 );
 
+-- TABEL PRESMA --
 CREATE TABLE [presma] (
-	presma_id INT PRIMARY KEY IDENTITY (1,1),
-	nim VARCHAR (20) NOT NULL,
-	prestasi_id INT NOT NULL,
-	peran_mahasiswa_id INT NOT NULL,
-	FOREIGN KEY (nim) REFERENCES[mahasiswa](nim),
-	FOREIGN KEY (prestasi_id) REFERENCES[prestasi](prestasi_id),
-	FOREIGN KEY (peran_mahasiswa_id) REFERENCES[peran_mahasiswa](peran_mahasiswa_id)
+    presma_id INT PRIMARY KEY IDENTITY(1,1),
+    nim VARCHAR(20) NOT NULL,
+    prestasi_id INT NOT NULL,
+    peran_mahasiswa_id INT NOT NULL,
+    FOREIGN KEY (nim) REFERENCES [mahasiswa](nim),
+    FOREIGN KEY (prestasi_id) REFERENCES [prestasi](prestasi_id),
+    FOREIGN KEY (peran_mahasiswa_id) REFERENCES [peran_mahasiswa](peran_mahasiswa_id)
 );
 
+-- TABEL DOSPEM --
 CREATE TABLE [dospem] (
-	dospem_id INT PRIMARY KEY IDENTITY (1,1),
-	dosen_id INT NOT NULL,
-	prestasi_id INT NOT NULL,
-	peran_dosen_id INT NOT NULL,
-	FOREIGN KEY (dosen_id) REFERENCES[dosen](dosen_id),
-	FOREIGN KEY (prestasi_id) REFERENCES[prestasi](prestasi_id),
-	FOREIGN KEY (peran_dosen_id) REFERENCES[peran_dosen](peran_dosen_id)
+    dospem_id INT PRIMARY KEY IDENTITY(1,1),
+    dosen_id INT NOT NULL,
+    prestasi_id INT NOT NULL,
+    peran_dosen_id INT NOT NULL,
+    FOREIGN KEY (dosen_id) REFERENCES [dosen](dosen_id),
+    FOREIGN KEY (prestasi_id) REFERENCES [prestasi](prestasi_id),
+    FOREIGN KEY (peran_dosen_id) REFERENCES [peran_dosen](peran_dosen_id)
 );
-
-
 GO
 
 -- Mengisi data dummy ke tabel user
@@ -258,14 +255,13 @@ VALUES
 ('Best', 1);
 
 -- Mengisi data dummy ke tabel dokumen
-INSERT INTO [dokumen] 
-    (flyer, sertifikat, foto_kegiatan, surat_tugas, nomor_surat_tugas, tanggal_surat_tugas, proposal, komentar) 
-VALUES
-    ('ImageFlyer', 'Sertifikat1', 'FotoKegiatan1', 'SuratTugas1', 'ST123/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 1'),
-    ('ImageFlyer2', 'Sertifikat2', 'FotoKegiatan2', 'SuratTugas2', 'ST124/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 2'),
-    ('ImageFlyer3', 'Sertifikat3', 'FotoKegiatan3', 'SuratTugas3', 'ST125/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 3'),
-    ('ImageFlyer4', 'Sertifikat4', 'FotoKegiatan4', 'SuratTugas4', 'ST126/2024','2024-09-09', 'Proposal1', 'Dokumen lengkap untuk prestasi 4'),
-    ('ImageFlyer5', 'Sertifikat5', 'FotoKegiatan5', 'SuratTugas5', 'ST127/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 5');
+-- Mengisi data dummy ke tabel dokumen
+INSERT INTO [dokumen] (flyer, sertifikat, foto_kegiatan, surat_tugas, nomor_surat_tugas, proposal, komentar) VALUES
+(0x496D616765466C796572, 0x5365727469666963617465, 0x466F746F4B6567696174616E, 0x53757261745475676173, 'ST123/2024', NULL, 'Dokumen lengkap untuk prestasi 1'),
+(0x496D616765466C79657232, 0x536572746966696361746532, 0x466F746F4B6567696174616E32, 0x5375726174547567617332, 'ST124/2024', NULL, 'Dokumen lengkap untuk prestasi 2'),
+(0x496D616765466C79657233, 0x536572746966696361746533, 0x466F746F4B6567696174616E33, 0x5375726174547567617333, 'ST125/2024', NULL, 'Dokumen lengkap untuk prestasi 3'),
+(0x496D616765466C79657234, 0x536572746966696361746534, 0x466F746F4B6567696174616E34, 0x5375726174547567617334, 'ST126/2024', 0x50726F706F73616C, 'Dokumen lengkap untuk prestasi 4'),
+(0x496D616765466C79657235, 0x536572746966696361746535, 0x466F746F4B6567696174616E35, 0x5375726174547567617335, 'ST127/2024', NULL, 'Dokumen lengkap untuk prestasi 5');
 
 -- Mengisi data dummy ke tabel peran_mahasiswa
 INSERT INTO [peran_mahasiswa] (nama_peran) VALUES
@@ -309,5 +305,3 @@ VALUES
     (3, 3, 3),
     (4, 4, 4),
     (1, 5, 5);
-
-select * from infolomba
