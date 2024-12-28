@@ -369,10 +369,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               <tr class="text-center">
                                 <td class="text-center">1</td>
                                 <td class="text-center">
-                                  <select name="mahasiswa[]" class="form-control" multiple>
-                                    <option>Pilih Mahasiswa</option>
+                                  <select name="mahasiswa[]" class="form-control" required>
+                                    <option value="">Pilih Mahasiswa</option>
                                     <?php while ($row = sqlsrv_fetch_array($stmtMahasiswa, SQLSRV_FETCH_ASSOC)) { ?>
-                                      <option value="<?php echo $row['nim']; ?>"><?php echo $row['nim'] . ' - ' . $row['nama_depan'] . ' ' . $row['nama_belakang']; ?></option>
+                                      <option value="<?php echo $row['nim']; ?>">
+                                        <?php echo $row['nim'] . ' - ' . $row['nama_depan'] . ' ' . $row['nama_belakang']; ?>
+                                      </option>
                                     <?php } ?>
                                   </select>
                                 </td>

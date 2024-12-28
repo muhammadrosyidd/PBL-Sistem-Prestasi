@@ -1,17 +1,70 @@
-<!--
-=========================================================
-* Argon Dashboard 3 - v2.1.0
-=========================================================
+<?php
+require_once __DIR__ . '/../../config/Connection.php';
 
-* Product Page: https://www.creative-tim.com/product/argon-dashboard
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://www.creative-tim.com/license)
-* Coded by Creative Tim
+// Start session untuk mendapatkan username
+if (session_status() == PHP_SESSION_NONE) {
+  session_start();
+}
 
-=========================================================
+// Periksa apakah pengguna sudah login
+if (!isset($_SESSION['username'])) {
+  header("Location: /PBL-Sistem-Prestasi/system/pages-Sign-in/Login.php");
+  exit();
+}
 
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
--->
+// Ambil username dari session
+$username = $_SESSION['username'];
+
+// Buat koneksi ke database
+$db = new Connection("localhost", "", "", "PRESTASI");
+$conn = $db->connect();
+
+if ($conn === false) {
+  die("Database connection failed: " . print_r(sqlsrv_errors(), true));
+}
+
+// Query untuk mengambil data prestasi jika username sama dengan NIM di tabel presma
+$sql = "
+    SELECT 
+        p.judul, 
+        p.tempat, 
+        p.link_kompetisi, 
+        FORMAT(p.tanggal_mulai, 'dd MMM yyyy') AS tanggal_mulai, 
+        FORMAT(p.tanggal_akhir, 'dd MMM yyyy') AS tanggal_akhir, 
+        p.jumlah_peserta, 
+        k.nama_kategori, 
+        pr.peran_mahasiswa_id
+    FROM prestasi p
+    JOIN presma pr ON p.prestasi_id = pr.prestasi_id
+    JOIN kategori k ON p.kategori_id = k.kategori_id
+    WHERE pr.nim = ?
+";
+
+$params = [$username];
+$stmt = sqlsrv_query($conn, $sql, $params);
+
+// Periksa apakah query berhasil
+if ($stmt === false) {
+  die("Query failed: " . print_r(sqlsrv_errors(), true));
+}
+
+// Menyimpan hasil query ke array
+$prestasi = [];
+while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+  // Karena tanggal sudah diformat di query SQL, tidak perlu mengonversinya lagi di PHP
+  $prestasi[] = $row;
+}
+
+sqlsrv_free_stmt($stmt);
+sqlsrv_close($conn);
+
+// Debug: Periksa apakah data prestasi ditemukan
+if (empty($prestasi)) {
+  echo "Tidak ada data prestasi ditemukan untuk username: $username";
+  exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -60,7 +113,7 @@
             <span class="nav-link-text ms-1">Dashboard</span>
           </a>
         </li>
-       
+
         <li class="nav-item">
           <a class="nav-link active" href="../pageMahasiswa/dataPrestasi.php">
             <div
@@ -73,85 +126,95 @@
 
       </ul>
     </div>
-   
+
   </aside>
   <main class="main-content position-relative border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
-      
+
     </nav>
     <!-- End Navbar -->
     <div class="container-fluid py-41">
       <div class="row">
-        
+
       </div>
       <div class="row">
         <div class="col-12">
           <div class="card mb-4">
             <div class="card-header pb-0">
               <h6>Data Prestasi</h6>
-              <a href="inputPrestasi.html"><button class="btn bg-gradient-warning">+ Prestasi</button></a>
+              <a href="../prestasi/inputPrestasi.php"><button class="btn bg-gradient-warning">+ Prestasi</button></a>
             </div>
             <div class="card-body px-0 pt-0 pb-2">
               <div class="table-responsive p-0">
                 <table class="table align-items-center justify-content-center mb-0">
                   <thead>
                     <tr>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Kompetisi</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tanggal</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Jenis</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Nomor Surat Tugas</th>
                       <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Aksi</th>
-                      
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                          <span style="margin: 1rem;" class="text-center text-xs font-weight-bold">KMIPN</span>
-                      </td>
-                      <td>
-                        <span class="text-center text-xs font-weight-bold">24 Oktober 2024</span>
-                      </td>
-                      <td>
-                        <span class="text-center text-xs font-weight-bold">Saintek</span>
-                      </td>
-                      <td>
-                          <span class="me-2 text-xs font-weight-bold" style="color: red;">Belum Diverifikasi</span>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-"></button><span class="action cursor-pointer text-center text-xs font-weight-bold" onclick="toggleDetails()">Detail</span>
-                      </td>
-                    </tr>
-                    <tr style="margin-left: 2rem;" id="details" class="details">
-                      <td class="text-xs" colspan="2">
-                        <strong>Detail Prestasi:</strong><br>
-                        <b>Tingkat:</b> Nasional<br>
-                        <b>Link Kompetisi:</b> https%3A%2F%2Fwww<br>
-                        <b>Tanggal Mulai:</b> 24 Okt 2024<br>
-                        <b>Tanggal Akhir:</b> 27 okt 2024<br>
-                        <b>Tempat:</b> Politeknik Negeri Jember<br>
-                        <b>Jumlah Peserta:</b> 5373<br>
-                        <b>Surat Tugas:</b><br>
-                        No: 372/PDG4/8KP/2024 <br>
-                        Tanggal: 23 Okt 2024 <br>
-                        <b>Lampiran:</b><br><br>
-                        
-                      </td>
-                      <td class="text-xs" colspan="3">
-                        <b>Peserta:</b><br>
-                        2341760193 - Keysha Arindra Fabian<br>
-                        2341760121 - Muhammad Rosyid<br>
-                        2341760070 - Imel Theresia Br Sembiring<br>
-                        2341760070 - Farel Maryam Laili Hajiri<br>
-                        2341760070 - Satrio Dian Nugroho<br>
-                        <b>Pembimbing:</b><br>
-                        Endah Septa Sintiya. SPd., MKom
-                        
-                      </td>
-                      
-                    </tr>
+                    <?php if (!empty($prestasi)): ?>
+                      <?php
+                      $no = 1; // Deklarasikan variabel $no
+                      foreach ($prestasi as $index => $data):
+                      ?>
+                        <tr>
+                          <td class="text-center text-xxs font-weight-bold mb-0"><?= $no++; ?></td>
+                          <td class="text-center">
+                            <span class="text-xs font-weight-bold mb-0"><?= htmlspecialchars($data['judul'] ?? ''); ?></span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-xs font-weight-bold mb-0">
+                              <?= htmlspecialchars($data['tanggal_mulai'] ?? ''); ?>
+                              -
+                              <?= htmlspecialchars($data['tanggal_akhir'] ?? ''); ?>
+                            </span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-xs font-weight-bold mb-0"><?= htmlspecialchars($data['nama_kategori'] ?? ''); ?></span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-xs font-weight-bold mb-0">Belum Diverifikasi</span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-xs font-weight-bold mb-0"><?= htmlspecialchars($data['nomor_surat_tugas'] ?? '-'); ?></span>
+                          </td>
+                          <td class="align-middle text-center text-sm">
+                            <button class="btn bg-gradient-primary mt-0 mb-0" onclick="toggleDetails(<?= $index; ?>)">Detail</button>
+                          </td>
+                        </tr>
+                        <!-- Baris Detail -->
+                        <tr id="details-<?= $index; ?>" style="display:none;">
+                          <td colspan="7" style="padding: 1rem; font-size: 12px;">
+                            <strong>Detail Prestasi:</strong><br>
+                            <b>Tingkat:</b> <?= htmlspecialchars($data['peran_mahasiswa_id'] ?? ''); ?><br>
+                            <b>Link Kompetisi:</b>
+                            <a href="<?= htmlspecialchars($data['link_kompetisi'] ?? '#'); ?>" target="_blank">
+                              <?= htmlspecialchars($data['link_kompetisi'] ?? ''); ?>
+                            </a><br>
+                            <b>Tanggal Mulai:</b> <?= htmlspecialchars($data['tanggal_mulai'] ?? '-'); ?><br>
+                            <b>Tanggal Akhir:</b> <?= htmlspecialchars($data['tanggal_akhir'] ?? '-'); ?><br>
+                            <b>Tempat:</b> <?= htmlspecialchars($data['tempat'] ?? '-'); ?><br>
+                            <b>Jumlah Peserta:</b> <?= htmlspecialchars($data['jumlah_peserta'] ?? '-'); ?><br>
+                            <b>Peringkat Juara:</b> <?= htmlspecialchars($data['nama_peringkat'] ?? '-'); ?><br>
+                            <b>Surat Tugas:</b> <br>
+                            No: <?= htmlspecialchars($data['nomor_surat_tugas'] ?? '-'); ?><br>
+                            Tanggal: <?= htmlspecialchars($data['tanggal_surat_tugas'] ?? '-'); ?><br>
+                          </td>
+                        </tr>
+                      <?php endforeach; ?>
+                    <?php else: ?>
+                      <tr>
+                        <td colspan="7" class="text-center">Tidak ada data prestasi ditemukan.</td>
+                      </tr>
+                    <?php endif; ?>
                   </tbody>
                 </table>
               </div>
@@ -159,10 +222,10 @@
           </div>
         </div>
       </div>
-      
+
     </div>
   </main>
-  
+
   <!--   Core JS Files   -->
   <script src="../../assets2/js/core/popper.min.js"></script>
   <script src="../../assets2/js/core/bootstrap.min.js"></script>
@@ -178,15 +241,15 @@
     }
   </script>
   <script>
-    function toggleDetails() {
-        var details = document.getElementById("details");
-        if (details.style.display === "none") {
-            details.style.display = "table-row";
-        } else {
-            details.style.display = "none";
-        }
+    function toggleDetails(index) {
+      // Mendapatkan elemen baris detail berdasarkan ID
+      const detailsRow = document.getElementById(`details-${index}`);
+      if (detailsRow) {
+        // Toggle visibilitas baris detail
+        detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
+      }
     }
-</script>
+  </script>
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
