@@ -1,0 +1,88 @@
+.lider {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.leaderboard {
+    justify-content: center;
+    background-color: #ffb915;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    width: 30%;
+
+
+}
+
+.leaderboard-title {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #ffffff;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffd358;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.medal {
+    font-size: 1.25rem;
+}
+
+.medal-gold {
+    color: #F59E0B;
+}
+
+.medal-silver {
+    color: #9CA3AF;
+}
+
+.medal-bronze {
+    color: #F97316;
+}
+
+.player-name {
+    color: #5f4f00;
+}
+
+.player-name1 {
+    color: #5f4f00;
+    font-size: large;
+    font-style: italic;
+}
+
+.stars {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.star {
+    font-size: 1rem;
+}
+
+.star.yellow {
+    color: #FBBF24;
+}
+
+.star.blue {
+    color: #3B82F6;
+}
+
+.score {
+    color: #5f4f00;
+}
