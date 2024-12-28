@@ -37,7 +37,7 @@
             <div class="collapse navbar-collapse" id="navbarMenu">
                 <ul class="nav navbar-nav navbar-right navbar-uppercase">
                     <li>
-                        <a href="../system/pages-Sign-in/Login.php" class="btn btn-danger btn-fill">Login</a>
+                        <a href="system/pages-Sign-in/Login.php" class="btn btn-danger btn-fill">Login</a>
                     </li>
                 </ul>
             </div>
