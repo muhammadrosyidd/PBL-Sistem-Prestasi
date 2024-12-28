@@ -1,3 +1,15 @@
+-- Menghapus database 'PRESTASI'
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'PRESTASI')
+BEGIN
+    -- Hapus database jika ada
+    DROP DATABASE PRESTASI;
+    PRINT 'Database PRESTASI telah dihapus.';
+END
+ELSE
+BEGIN
+    PRINT 'Database PRESTASI tidak ditemukan.';
+END
+GO
 
 -- Membuat database 'PRESTASI'
 CREATE DATABASE PRESTASI;
@@ -88,22 +100,16 @@ CREATE TABLE [peringkat] (
 --table dokumen--
 CREATE TABLE [dokumen] (
     dokumen_id INT PRIMARY KEY IDENTITY(1,1), 
-    flyer VARBINARY(MAX) NOT NULL, 
-    sertifikat VARBINARY(MAX) NOT NULL, 
-	foto_kegiatan VARBINARY(MAX) NOT NULL,
-    surat_tugas VARBINARY(MAX) NOT NULL, 
-	nomor_surat_tugas VARCHAR(50) NULL,
-    proposal VARBINARY(MAX) NULL, 
-    komentar VARCHAR(MAX) NULL
+    flyer VARCHAR(MAX) NOT NULL, 
+    sertifikat VARCHAR(MAX) NOT NULL, 
+    foto_kegiatan VARCHAR(MAX) NOT NULL,
+    surat_tugas VARCHAR(MAX) NOT NULL, 
+    nomor_surat_tugas VARCHAR(50) NULL,
+    proposal VARCHAR(MAX) NULL, 
+    komentar VARCHAR(MAX) NULL,
+    tanggal_surat_tugas DATE NOT NULL
 );
 
--- Ubah kolom nomor_surat_tugas menjadi NOT NULL
-ALTER TABLE dokumen
-ALTER COLUMN nomor_surat_tugas VARCHAR(50) NOT NULL;
-
--- Tambahkan kolom tanggal_surat dengan tipe DATE dan NOT NULL
-ALTER TABLE [dokumen]
-ADD tanggal_surat_tugas DATE DEFAULT GETDATE();
 
 -- Membuat tabel peran mahasiswa
 CREATE TABLE [peran_mahasiswa] (
@@ -131,6 +137,7 @@ CREATE TABLE [prestasi] (
     peringkat_id INT NOT NULL, 
     dokumen_id INT NULL, 
 	verifikasi_status VARCHAR(20) DEFAULT 'Belum Terverifikasi',
+	tanggal_input DATETIME DEFAULT GETDATE()
     FOREIGN KEY (kategori_id) REFERENCES [kategori](kategori_id), 
     FOREIGN KEY (tingkat_lomba_id) REFERENCES [tingkatLomba](tingkat_lomba_id), 
     FOREIGN KEY (peringkat_id) REFERENCES [peringkat](peringkat_id), 
@@ -139,7 +146,7 @@ CREATE TABLE [prestasi] (
 
 CREATE TABLE infolomba (
     id_infoLomba INT PRIMARY KEY IDENTITY(1,1),
-    gambar_poster VARBINARY(MAX) NULL,
+    gambar_poster VARCHAR(MAX) NULL,
     jenis_lomba VARCHAR(100) NOT NULL,
     tingkat_lomba_id INT NOT NULL, 
     tanggal_pelaksanaan DATE NOT NULL,
@@ -168,14 +175,19 @@ CREATE TABLE [dospem] (
 	FOREIGN KEY (peran_dosen_id) REFERENCES[peran_dosen](peran_dosen_id)
 );
 
+
 GO
 
+-- Mengisi data dummy ke tabel user
 -- Mengisi data dummy ke tabel user
 INSERT INTO [user] (username, password, role) VALUES
 ('superadmin', HASHBYTES('MD5', 'super123'), 1),
 ('admin', HASHBYTES('MD5', 'admin123'), 2),
-('2341760028', HASHBYTES('MD5', '2341760028'), 3),
-('2341760058', HASHBYTES('MD5', '2341760058'), 3);
+('2341760028', HASHBYTES('MD5', 'farel123'), 3), -- Password untuk mahasiswa Farel
+('2341760058', HASHBYTES('MD5', 'adinda123'), 3), -- Password untuk mahasiswa Adinda
+('2341760088', HASHBYTES('MD5', 'ardi123'), 3), -- Password untuk mahasiswa Ardi
+('2341760118', HASHBYTES('MD5', 'keysha123'), 3), -- Password untuk mahasiswa Keysha
+('2341760148', HASHBYTES('MD5', 'dimas123'), 3); -- Password untuk mahasiswa Dimas
 
 
 -- Mengisi data dummy ke tabel superadmin
@@ -195,12 +207,17 @@ INSERT INTO [prodi] (nama_prodi) VALUES
 -- Mengisi data dummy ke tabel mahasiswa
 INSERT INTO [mahasiswa] (nim, username, nama_depan, nama_belakang, jeniskelamin, telepon, alamat, prodi_id) VALUES
 ('2341760028', '2341760028', 'Farel', 'Maryam', 'P', '081223344556', 'Jl. Kebangsaan No. 12', 2),
-('2341760058', '2341760058', 'Adinda', 'Ivanka', 'P', '081334455667', 'Jl. Indonesia Raya No. 8', 2);
+('2341760058', '2341760058', 'Adinda', 'Ivanka', 'P', '081334455667', 'Jl. Indonesia Raya No. 8', 2),
+('2341760088', '2341760088', 'Ardi', 'Saputra', 'L', '081445566778', 'Jl. Merdeka No. 1', 1),
+('2341760118', '2341760118', 'Keysha', 'Arindra Fabian', 'P', '081556677889', 'Jl. Sudirman No. 5', 3),
+('2341760148', '2341760148', 'Dimas', 'Prasetyo', 'L', '081667788990', 'Jl. Gatot Subroto No. 3', 1);
 
 --tambah tabel dosen--
 INSERT INTO [dosen] (nidn, nama, telepon) VALUES 
 ('1234567890', 'Dr. Ahmad Fauzi', '081987654321'),
-('0987654321', 'Dr. Rina Sari', '082123456789');
+('0987654321', 'Dr. Rina Sari', '082123456789'),
+('9876543210', 'Prof. Budiman', '081112223333'),
+('8765432109', 'Dr. Ayu Lestari', '082223334444');
 
 -- Mengisi data dummy ke tabel kategori
 INSERT INTO [kategori] (nama_kategori) VALUES
@@ -240,9 +257,14 @@ VALUES
 ('Best', 1);
 
 -- Mengisi data dummy ke tabel dokumen
-INSERT INTO [dokumen] (flyer, sertifikat, foto_kegiatan, surat_tugas, nomor_surat_tugas, proposal, komentar) VALUES
-(0x, 0x, 0x, 0x, 'ST123/2024', NULL, 'Dokumen lengkap untuk prestasi 1'),
-(0x, 0x, 0x, 0x, 'ST124/2024', NULL, 'Dokumen lengkap untuk prestasi 2');
+INSERT INTO [dokumen] 
+    (flyer, sertifikat, foto_kegiatan, surat_tugas, nomor_surat_tugas, tanggal_surat_tugas, proposal, komentar) 
+VALUES
+    ('ImageFlyer', 'Sertifikat1', 'FotoKegiatan1', 'SuratTugas1', 'ST123/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 1'),
+    ('ImageFlyer2', 'Sertifikat2', 'FotoKegiatan2', 'SuratTugas2', 'ST124/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 2'),
+    ('ImageFlyer3', 'Sertifikat3', 'FotoKegiatan3', 'SuratTugas3', 'ST125/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 3'),
+    ('ImageFlyer4', 'Sertifikat4', 'FotoKegiatan4', 'SuratTugas4', 'ST126/2024','2024-09-09', 'Proposal1', 'Dokumen lengkap untuk prestasi 4'),
+    ('ImageFlyer5', 'Sertifikat5', 'FotoKegiatan5', 'SuratTugas5', 'ST127/2024','2024-09-09', NULL, 'Dokumen lengkap untuk prestasi 5');
 
 -- Mengisi data dummy ke tabel peran_mahasiswa
 INSERT INTO [peran_mahasiswa] (nama_peran) VALUES
@@ -258,21 +280,31 @@ INSERT INTO [peran_dosen] (nama_peran) VALUES
 ('Membimbing mahasiswa mengikuti kompetisi di bidang akademik dan kemahasiswaan bereputasi dan mencapai juara tingkat Internasional'),
 ('Membimbing mahasiswa mengikuti kompetisi di bidang akademik dan kemahasiswaan bereputasi dan mencapai juara tingkat Nasional');
 
+
 -- Mengisi data dummy ke tabel prestasi
 INSERT INTO [prestasi] 
-(judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, verifikasi_status) 
+(judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, verifikasi_status, tanggal_input) 
 VALUES
-('Mobile UI/UX Competition', 'Jakarta', 'http://linkkompetisi1.com', '2024-01-01', '2024-01-05', '5', 1, 2, 1, 1, 'Belum Terverifikasi'),
-('Karya Tulis Ilmiah', 'Bandung', 'http://linkkompetisi2.com', '2024-02-01', '2024-02-03', '3', 12, 1, 2, 2, 'Belum Terverifikasi');
+('Mobile UI/UX Competition', 'Jakarta', 'http://linkkompetisi1.com', '2024-01-01', '2024-01-05', '5', 1, 2, 1, 1, 'Belum Terverifikasi', '2024-12-15 10:00:00'),
+('Karya Tulis Ilmiah', 'Bandung', 'http://linkkompetisi2.com', '2024-02-01', '2024-02-03', '3', 12, 1, 2, 2, 'Belum Terverifikasi', '2024-12-10 14:30:00'),
+('Web Development Competition', 'Surabaya', 'http://linkkompetisi3.com', '2024-03-15', '2024-03-17', '10', 2, 2, 3, 3, 'Terverifikasi', '2024-11-20 16:00:00'),
+('Hackathon', 'Yogyakarta', 'http://linkkompetisi4.com', '2024-04-01', '2024-04-03', '20', 10, 3, 1, 4, 'Belum Terverifikasi', '2024-11-16 09:45:00'),
+('Mobile App Development', 'Denpasar', 'http://linkkompetisi5.com', '2024-05-10', '2024-05-12', '15', 4, 3, 2, 5, 'Terverifikasi', '2024-10-23 12:15:00');
 
--- Dummy data for presma table
+-- Data dummy for presma table
 INSERT INTO [presma] (nim, prestasi_id, peran_mahasiswa_id)
 VALUES
     ('2341760028', 1, 1),
-    ('2341760058', 2, 2);
+    ('2341760058', 2, 2),
+    ('2341760028', 3, 1),
+    ('2341760118', 4, 2),
+    ('2341760148', 5, 1);
 
--- Dummy data for dospem table
+-- Data dummy for dospem table
 INSERT INTO [dospem] (dosen_id, prestasi_id, peran_dosen_id)
 VALUES
     (1, 1, 1),
-    (2, 2, 2);
+    (2, 2, 2),
+    (3, 3, 3),
+    (4, 4, 4),
+    (1, 5, 5);
