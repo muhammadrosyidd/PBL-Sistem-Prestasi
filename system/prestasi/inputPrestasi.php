@@ -171,76 +171,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <div class="min-height-300 bg-gradient-warning position-absolute w-100">
     <span class="mask bg-gradient-warning opacity-5"></span>
   </div>
-  <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4 " id="sidenav-main">
-    <div class="sidenav-header">
-      <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand m-0" href=" https://demos.creative-tim.com/argon-dashboard/pages-SuperAdmin/dashboard.html " target="_blank">
-        <img src="../../assets2/img/jti.png" width="30px" height="50px" class="navbar-brand-img h-100" alt="main_logo">
-        <span class="ms-1 font-weight-bold">Pencatatan Prestasi</span>
-      </a>
-    </div>
-    <hr class="horizontal dark mt-0">
-    <div class="w-auto" id="sidenav-collapse-main">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dashboard.html">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataPengguna.php">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Pengguna</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataDosen.php">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Dosen</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="../pages-SuperAdmin/dataMahasiswa.php">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-calendar-grid-58 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Mahasiswa</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="../pages-SuperAdmin/dataPrestasi.php">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Data Prestasi</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="informasiLomba.php">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-app text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Informasi Lomba</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link " href="laporan.html">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-world-2 text-dark text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Laporan</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </aside>
+  <?php
+  include_once __DIR__ . '/../layout/sidebarSuper.php';
+  ?>
   <div class="main-content position-relative max-height-vh-100 h-100">
     <div class="card shadow-lg mx-4 card-profile-bottom"></div>
     <div class="container-fluid py-4">
@@ -264,8 +197,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="peran_mahasiswa_id" class="form-control-label">Peran</label>
-                      <input class="form-control" value="1" name="peran_mahasiswa_id" id="peran_mahasiswa_id" readonly>
+                      <input type="hidden" class="form-control" value="1" name="peran_mahasiswa_id" id="peran_mahasiswa_id">
+                      <div class="form-control" readonly>Ketua</div>
                     </div>
+
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">

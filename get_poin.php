@@ -34,7 +34,7 @@ FROM
 JOIN 
     presma p ON m.nim = p.nim
 JOIN 
-    prestasi pr ON p.prestasi_id = pr.prestasi_id
+    prestasi pr ON p.idpres = pr.idpres
 JOIN 
     tingkatLomba tl ON pr.tingkat_lomba_id = tl.tingkat_lomba_id
 JOIN 
