@@ -100,12 +100,11 @@ CREATE TABLE [peringkat] (
 -- TABEL DOKUMEN --
 CREATE TABLE [dokumen] (
     dokumen_id INT PRIMARY KEY IDENTITY(1,1), 
-    flyer VARBINARY(MAX) NOT NULL, 
-    sertifikat VARBINARY(MAX) NOT NULL, 
-    foto_kegiatan VARBINARY(MAX) NOT NULL,
-    surat_tugas VARBINARY(MAX) NOT NULL, 
+    sertifikat VARCHAR(MAX) NOT NULL, 
+    foto_kegiatan VARCHAR(MAX) NOT NULL,
+    surat_tugas VARCHAR(MAX) NOT NULL, 
     nomor_surat_tugas VARCHAR(50) NULL,
-    proposal VARBINARY(MAX) NULL, 
+    tanggal_surat_tugas DATE NULL,
     komentar VARCHAR(MAX) NULL
 );
 
@@ -124,6 +123,7 @@ CREATE TABLE [peran_dosen] (
 -- TABEL PRESTASI --
 CREATE TABLE [prestasi] (
     prestasi_id INT PRIMARY KEY IDENTITY(1,1), 
+	idpres INT NOT NULL,
     judul VARCHAR(255) NOT NULL,  
     tempat VARCHAR(255) NOT NULL,
     link_kompetisi VARCHAR(255) NOT NULL,
@@ -153,25 +153,24 @@ CREATE TABLE infolomba (
     penyelenggara VARCHAR(100) NOT NULL
 );
 
--- TABEL PRESMA --
 CREATE TABLE [presma] (
     presma_id INT PRIMARY KEY IDENTITY(1,1),
     nim VARCHAR(20) NOT NULL,
-    prestasi_id INT NOT NULL,
     peran_mahasiswa_id INT NOT NULL,
+    idpres INT NOT NULL,
     FOREIGN KEY (nim) REFERENCES [mahasiswa](nim),
-    FOREIGN KEY (prestasi_id) REFERENCES [prestasi](prestasi_id),
-    FOREIGN KEY (peran_mahasiswa_id) REFERENCES [peran_mahasiswa](peran_mahasiswa_id)
+    FOREIGN KEY (peran_mahasiswa_id) REFERENCES [peran_mahasiswa](peran_mahasiswa_id),
+    FOREIGN KEY (idpres) REFERENCES [prestasi](prestasi_id)
 );
 
 -- TABEL DOSPEM --
 CREATE TABLE [dospem] (
     dospem_id INT PRIMARY KEY IDENTITY(1,1),
     dosen_id INT NOT NULL,
-    prestasi_id INT NOT NULL,
+    idpres INT NOT NULL,
     peran_dosen_id INT NOT NULL,
     FOREIGN KEY (dosen_id) REFERENCES [dosen](dosen_id),
-    FOREIGN KEY (prestasi_id) REFERENCES [prestasi](prestasi_id),
+	FOREIGN KEY (idpres) REFERENCES [prestasi](prestasi_id),
     FOREIGN KEY (peran_dosen_id) REFERENCES [peran_dosen](peran_dosen_id)
 );
 GO
@@ -254,14 +253,14 @@ VALUES
 ('Harapan 3', 2),
 ('Best', 1);
 
+
 -- Mengisi data dummy ke tabel dokumen
--- Mengisi data dummy ke tabel dokumen
-INSERT INTO [dokumen] (flyer, sertifikat, foto_kegiatan, surat_tugas, nomor_surat_tugas, proposal, komentar) VALUES
-(0x496D616765466C796572, 0x5365727469666963617465, 0x466F746F4B6567696174616E, 0x53757261745475676173, 'ST123/2024', NULL, 'Dokumen lengkap untuk prestasi 1'),
-(0x496D616765466C79657232, 0x536572746966696361746532, 0x466F746F4B6567696174616E32, 0x5375726174547567617332, 'ST124/2024', NULL, 'Dokumen lengkap untuk prestasi 2'),
-(0x496D616765466C79657233, 0x536572746966696361746533, 0x466F746F4B6567696174616E33, 0x5375726174547567617333, 'ST125/2024', NULL, 'Dokumen lengkap untuk prestasi 3'),
-(0x496D616765466C79657234, 0x536572746966696361746534, 0x466F746F4B6567696174616E34, 0x5375726174547567617334, 'ST126/2024', 0x50726F706F73616C, 'Dokumen lengkap untuk prestasi 4'),
-(0x496D616765466C79657235, 0x536572746966696361746535, 0x466F746F4B6567696174616E35, 0x5375726174547567617335, 'ST127/2024', NULL, 'Dokumen lengkap untuk prestasi 5');
+INSERT INTO [dokumen] ( sertifikat, foto_kegiatan, surat_tugas, nomor_surat_tugas, komentar) VALUES
+( 'Dokumen Sertifikat 1', 'Dokumen Foto Kegiatan 1', 'Dokumen Surat Tugas 1', 'ST123/2024','Dokumen lengkap untuk prestasi 1'),
+('Dokumen Sertifikat 2', 'Dokumen Foto Kegiatan 2', 'Dokumen Surat Tugas 2', 'ST124/2024','Dokumen lengkap untuk prestasi 2'),
+('Dokumen Sertifikat 3', 'Dokumen Foto Kegiatan 3', 'Dokumen Surat Tugas 3', 'ST125/2024', 'Dokumen lengkap untuk prestasi 3'),
+('Dokumen Sertifikat 4', 'Dokumen Foto Kegiatan 4', 'Dokumen Surat Tugas 4', 'ST126/2024', 'Dokumen lengkap untuk prestasi 4'),
+('Dokumen Sertifikat 5', 'Dokumen Foto Kegiatan 5', 'Dokumen Surat Tugas 5', 'ST127/2024', 'Dokumen lengkap untuk prestasi 5');
 
 -- Mengisi data dummy ke tabel peran_mahasiswa
 INSERT INTO [peran_mahasiswa] (nama_peran) VALUES
@@ -280,16 +279,16 @@ INSERT INTO [peran_dosen] (nama_peran) VALUES
 
 -- Mengisi data dummy ke tabel prestasi
 INSERT INTO [prestasi] 
-(judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, verifikasi_status, tanggal_input) 
+(idpres,judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, verifikasi_status, tanggal_input) 
 VALUES
-('Mobile UI/UX Competition', 'Jakarta', 'http://linkkompetisi1.com', '2024-01-01', '2024-01-05', '5', 1, 2, 1, 1, 'Belum Terverifikasi', '2024-12-15 10:00:00'),
-('Karya Tulis Ilmiah', 'Bandung', 'http://linkkompetisi2.com', '2024-02-01', '2024-02-03', '3', 12, 1, 2, 2, 'Belum Terverifikasi', '2024-12-10 14:30:00'),
-('Web Development Competition', 'Surabaya', 'http://linkkompetisi3.com', '2024-03-15', '2024-03-17', '10', 2, 2, 3, 3, 'Terverifikasi', '2024-11-20 16:00:00'),
-('Hackathon', 'Yogyakarta', 'http://linkkompetisi4.com', '2024-04-01', '2024-04-03', '20', 10, 3, 1, 4, 'Belum Terverifikasi', '2024-11-16 09:45:00'),
-('Mobile App Development', 'Denpasar', 'http://linkkompetisi5.com', '2024-05-10', '2024-05-12', '15', 4, 3, 2, 5, 'Terverifikasi', '2024-10-23 12:15:00');
+(1, 'Mobile UI/UX Competition', 'Jakarta', 'http://linkkompetisi1.com', '2024-01-01', '2024-01-05', '5', 1, 2, 1, 1, 'Belum Terverifikasi', '2024-12-15 10:00:00'),
+(2, 'Karya Tulis Ilmiah', 'Bandung', 'http://linkkompetisi2.com', '2024-02-01', '2024-02-03', '3', 12, 1, 2, 2, 'Belum Terverifikasi', '2024-12-10 14:30:00'),
+(3, 'Web Development Competition', 'Surabaya', 'http://linkkompetisi3.com', '2024-03-15', '2024-03-17', '10', 2, 2, 3, 3, 'Terverifikasi', '2024-11-20 16:00:00'),
+(4, 'Hackathon', 'Yogyakarta', 'http://linkkompetisi4.com', '2024-04-01', '2024-04-03', '20', 10, 3, 1, 4, 'Belum Terverifikasi', '2024-11-16 09:45:00'),
+(5, 'Mobile App Development', 'Denpasar', 'http://linkkompetisi5.com', '2024-05-10', '2024-05-12', '15', 4, 3, 2, 5, 'Terverifikasi', '2024-10-23 12:15:00');
 
 -- Data dummy for presma table
-INSERT INTO [presma] (nim, prestasi_id, peran_mahasiswa_id)
+INSERT INTO [presma] (nim, idpres, peran_mahasiswa_id)
 VALUES
     ('2341760028', 1, 1),
     ('2341760058', 2, 2),
@@ -298,7 +297,7 @@ VALUES
     ('2341760148', 5, 1);
 
 -- Data dummy for dospem table
-INSERT INTO [dospem] (dosen_id, prestasi_id, peran_dosen_id)
+INSERT INTO [dospem] (dosen_id, idpres, peran_dosen_id)
 VALUES
     (1, 1, 1),
     (2, 2, 2),

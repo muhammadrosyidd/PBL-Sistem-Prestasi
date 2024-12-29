@@ -35,7 +35,7 @@ $sql = "
         k.nama_kategori, 
         pr.peran_mahasiswa_id
     FROM prestasi p
-    JOIN presma pr ON p.prestasi_id = pr.prestasi_id
+    JOIN presma pr ON p.idpres = pr.idpres
     JOIN kategori k ON p.kategori_id = k.kategori_id
     WHERE pr.nim = ?
 ";

@@ -1,144 +1,148 @@
 <?php
 require_once __DIR__ . '/../../config/Connection.php';
 
-$db = new Connection("localhost", "", "", "PRESTASI"); // Use localhost as the server
-$conn = $db->connect();  // Get the connection resource
-// Ambil data mahasiswa dari database
+// Konfigurasi database
+$db = new Connection("localhost", "", "", "PRESTASI");
+$conn = $db->connect();
+
+if ($conn === false) {
+  die("Connection failed: " . print_r(sqlsrv_errors(), true));
+}
+
+// Ambil data mahasiswa
 $sqlMahasiswa = "SELECT nim, nama_depan, nama_belakang FROM mahasiswa";
 $stmtMahasiswa = sqlsrv_query($conn, $sqlMahasiswa);
-
-// Ambil data dosen dari tabel dosen
-$sqlDosen = "SELECT dosen_id, nama FROM dosen";
-$stmtDosen = sqlsrv_query($conn, $sqlDosen);
-
 if ($stmtMahasiswa === false) {
   die("Query failed: " . print_r(sqlsrv_errors(), true));
 }
-if ($stmtMahasiswa === false) {
+
+// Ambil data dosen
+$sqlDosen = "SELECT dosen_id, nama FROM dosen";
+$stmtDosen = sqlsrv_query($conn, $sqlDosen);
+if ($stmtDosen === false) {
   die("Query failed: " . print_r(sqlsrv_errors(), true));
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Ambil input dari form
-  $judul = $_POST['judul']; // Judul kompetisi
-  $nim = $_POST['nim'];
-  $peran_mahasiswa_id = $_POST['peran_mahasiswa_id']; // Ambil peran mahasiswa dari input
+  $judul = $_POST['judul'];
   $tempat = $_POST['tempat'];
   $link_kompetisi = $_POST['link_kompetisi'];
   $jumlah_peserta = $_POST['jumlah_peserta'];
   $tanggal_mulai = $_POST['tanggal_mulai'];
   $tanggal_akhir = $_POST['tanggal_akhir'];
-  $nomor_surat_tugas = $_POST['nomor_surat_tugas'];
-  $tanggal_surat_tugas = $_POST['tanggal_surat_tugas'];
   $tingkat_lomba_id = $_POST['tingkat_lomba_id'];
   $peringkat_id = $_POST['peringkat_id'];
+  $mahasiswa_nims = $_POST['mahasiswa']; // Array of selected mahasiswa NIMs
+  $peran_mahasiswa_ids = $_POST['peran_mahasiswa_id']; // Array of roles for each mahasiswa
+  $pembimbing_ids = isset($_POST['pembimbing']) ? $_POST['pembimbing'] : []; // Array of selected pembimbing (supervisors)
+  $peran_dosen_ids = isset($_POST['peran_dosen_id']) ? $_POST['peran_dosen_id'] : []; // Array of roles for each pembimbing
 
-  // Cek apakah Judul Kompetisi ada di tabel kategori
-  $sql = "SELECT kategori_id FROM kategori WHERE nama_kategori = ?";
-  $params = [$judul];
-  $stmt = sqlsrv_query($conn, $sql, $params);  // Use $conn instead of $db
+  // Capture the NIM from the input field
+  $nim_input = $_POST['nim']; // NIM from the input field
+  $peran_mahasiswa_input = 1; // Set peran_mahasiswa_id to 1
 
-  if ($stmt === false) {
-    die("Query failed: " . print_r(sqlsrv_errors(), true));
+  // Handle file uploads
+  $uploadDir = 'dokumen/'; // Set your upload directory
+  $sertifikatPath = $uploadDir . basename($_FILES['sertifikat']['name']);
+  $fotoKegiatanPath = $uploadDir . basename($_FILES['foto_kegiatan']['name']);
+  $suratTugasPath = $uploadDir . basename($_FILES['surat_tugas']['name']);
+
+  // Move uploaded files to the designated folder
+  move_uploaded_file($_FILES['sertifikat']['tmp_name'], $sertifikatPath);
+  move_uploaded_file($_FILES['foto_kegiatan']['tmp_name'], $fotoKegiatanPath);
+  move_uploaded_file($_FILES['surat_tugas']['tmp_name'], $suratTugasPath);
+
+  // Proses kategori
+  $sqlKategori = "SELECT kategori_id FROM kategori WHERE nama_kategori = ?";
+  $paramsKategori = [$judul];
+  $stmtKategori = sqlsrv_query($conn, $sqlKategori, $paramsKategori);
+
+  if ($stmtKategori === false) {
+    die("Query kategori failed: " . print_r(sqlsrv_errors(), true));
   }
 
-  $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+  $rowKategori = sqlsrv_fetch_array($stmtKategori, SQLSRV_FETCH_ASSOC);
 
-  if ($row) {
-    // Jika ada kecocokan, ambil kategori_id
-    $kategori_id = $row['kategori_id'];
-    header("Location: dataPrestasi.php");
+  if ($rowKategori) {
+    $kategori_id = $rowKategori['kategori_id'];
   } else {
-    // Jika tidak ada kecocokan, tambahkan kategori baru
-    $sql_insert = "INSERT INTO kategori (nama_kategori) VALUES (?)";
-    $params_insert = [$judul];
-    $stmt_insert = sqlsrv_query($conn, $sql_insert, $params_insert);  // Use $conn instead of $db
+    // Tambah kategori baru
+    $sqlInsertKategori = "INSERT INTO kategori (nama_kategori) VALUES (?)";
+    $stmtInsertKategori = sqlsrv_query($conn, $sqlInsertKategori, $paramsKategori);
 
-    if ($stmt_insert === false) {
-      die("Insert failed: " . print_r(sqlsrv_errors(), true));
+    if ($stmtInsertKategori === false) {
+      die("Insert kategori failed: " . print_r(sqlsrv_errors(), true));
     }
 
-    // Ambil kategori_id yang baru ditambahkan
-    $kategori_id_query = sqlsrv_query($conn, "SELECT SCOPE_IDENTITY() AS kategori_id");  // Use $conn instead of $db
-    if ($kategori_id_query === false) {
-      die("Query to get new kategori_id failed: " . print_r(sqlsrv_errors(), true));
-    }
-
-    $row_kategori_id = sqlsrv_fetch_array($kategori_id_query, SQLSRV_FETCH_ASSOC);
-    if ($row_kategori_id) {
-      $kategori_id = $row_kategori_id['kategori_id'];
-    } else {
-      die("Failed to retrieve new kategori_id.");
-    }
+    // Ambil kategori_id yang baru saja ditambahkan
+    $kategori_id_query = sqlsrv_query($conn, "SELECT SCOPE_IDENTITY() AS kategori_id");
+    $rowKategoriId = sqlsrv_fetch_array($kategori_id_query, SQLSRV_FETCH_ASSOC);
+    $kategori_id = $rowKategoriId['kategori_id'];
   }
 
-  // Proses upload file
-  $targetDir = "dokumen/";
-  $surat_tugas = $targetDir . uniqid() . '_' . basename($_FILES["surat_tugas"]["name"]);
-  $sertifikat = $targetDir . uniqid() . '_' . basename($_FILES["sertifikat"]["name"]);
-  $foto_kegiatan = $targetDir . uniqid() . '_' . basename($_FILES["foto_kegiatan"]["name"]);
+  // Ambil nilai MAX(idpres) dari tabel prestasi
+  $sqlMaxIdpres = "SELECT ISNULL(MAX(idpres), 0) AS max_idpres FROM prestasi";
+  $stmtMaxIdpres = sqlsrv_query($conn, $sqlMaxIdpres);
 
-  // Cek upload file dan simpan ke database
-  if (
-    move_uploaded_file($_FILES["surat_tugas"]["tmp_name"], $surat_tugas) &&
-    move_uploaded_file($_FILES["sertifikat"]["tmp_name"], $sertifikat) &&
-    move_uploaded_file($_FILES["foto_kegiatan"]["tmp_name"], $foto_kegiatan)
-  ) {
+  if ($stmtMaxIdpres === false) {
+    die("Query MAX idpres gagal: " . print_r(sqlsrv_errors(), true));
+  }
 
-    // Masukkan data ke tabel prestasi
-    $sqlPrestasi = "INSERT INTO prestasi (judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, dokumen_id, verifikasi_status) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '1', 'Belum Terverifikasi')";
-    $paramsPrestasi = [$judul, $tempat, $link_kompetisi, $tanggal_mulai, $tanggal_akhir, $jumlah_peserta, $kategori_id, $tingkat_lomba_id, $peringkat_id];
-    $stmtPrestasi = sqlsrv_query($conn, $sqlPrestasi, $paramsPrestasi);  // Use $conn instead of $db
+  $rowMaxIdpres = sqlsrv_fetch_array($stmtMaxIdpres, SQLSRV_FETCH_ASSOC);
+  $idpres = $rowMaxIdpres['max_idpres'] + 1; // Jika NULL, mulai dari 1
 
-    if ($stmtPrestasi === false) {
-      die("Insert to prestasi failed: " . print_r(sqlsrv_errors(), true));
+  // Insert ke tabel prestasi dengan idpres manual
+  $sqlPrestasi = "INSERT INTO prestasi (idpres, judul, tempat, link_kompetisi, tanggal_mulai, tanggal_akhir, jumlah_peserta, kategori_id, tingkat_lomba_id, peringkat_id, verifikasi_status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Belum Terverifikasi')";
+  $paramsPrestasi = [$idpres, $judul, $tempat, $link_kompetisi, $tanggal_mulai, $tanggal_akhir, $jumlah_peserta, $kategori_id, $tingkat_lomba_id, $peringkat_id];
+  $stmtPrestasi = sqlsrv_query($conn, $sqlPrestasi, $paramsPrestasi);
+
+  if ($stmtPrestasi === false) {
+    die("Insert prestasi gagal: " . print_r(sqlsrv_errors(), true));
+  } else {
+    // Insert the NIM from the input field into the presma table
+    $sqlPresmaInput = "INSERT INTO presma (nim, peran_mahasiswa_id, idpres) VALUES (?, ?, ?)";
+    $paramsPresmaInput = [$nim_input, $peran_mahasiswa_input, $idpres];
+    $stmtPresmaInput = sqlsrv_query($conn, $sqlPresmaInput, $paramsPresmaInput);
+
+    if ($stmtPresmaInput === false) {
+      die("Insert presma (input) gagal: " . print_r(sqlsrv_errors(), true));
     }
 
-    // Ambil prestasi_id yang baru ditambahkan
-    $prestasi_id_query = sqlsrv_query($conn, "SELECT SCOPE_IDENTITY() AS prestasi_id");  // Use $conn instead of $db
-    if ($prestasi_id_query === false) {
-      die("Query to get new prestasi_id failed: " . print_r(sqlsrv_errors(), true));
+    // Insert ke tabel dokumen
+    $sqlDokumen = "INSERT INTO dokumen (sertifikat, foto_kegiatan, surat_tugas, nomor_surat_tugas, tanggal_surat_tugas) VALUES (?, ?, ?, ?, ?)";
+    $paramsDokumen = [$sertifikatPath, $fotoKegiatanPath, $suratTugasPath, $_POST['nomor_surat_tugas'], $_POST['tanggal_surat_tugas']];
+    $stmtDokumen = sqlsrv_query($conn, $sqlDokumen, $paramsDokumen);
+
+    if ($stmtDokumen === false) {
+      die("Insert dokumen gagal: " . print_r(sqlsrv_errors(), true));
     }
 
-    $row_prestasi_id = sqlsrv_fetch_array($prestasi_id_query, SQLSRV_FETCH_ASSOC);
-    if ($row_prestasi_id) {
-      $prestasi_id = $row_prestasi_id['prestasi_id'];
+    // Insert ke tabel presma for each selected mahasiswa
+    foreach ($mahasiswa_nims as $index => $nim) {
+      $sqlPresma = "INSERT INTO presma (nim, peran_mahasiswa_id, idpres) VALUES (?, ?, ?)";
+      $paramsPresma = [$nim, $peran_mahasiswa_input, $idpres]; // Set peran_mahasiswa_id to 1
+      $stmtPresma = sqlsrv_query($conn, $sqlPresma, $paramsPresma);
 
-      // Cek apakah NIM ada di tabel mahasiswa
-      $checkMahasiswaQuery = "SELECT * FROM mahasiswa WHERE nim = ?";
-      $checkMahasiswaStmt = sqlsrv_query($conn, $checkMahasiswaQuery, [$nim]);
-
-      if ($checkMahasiswaStmt === false) {
-        die("Query failed: " . print_r(sqlsrv_errors(), true));
+      if ($stmtPresma === false) {
+        die("Insert presma gagal: " . print_r(sqlsrv_errors(), true));
       }
+    }
 
-      if (sqlsrv_fetch_array($checkMahasiswaStmt, SQLSRV_FETCH_ASSOC) !== null) {
-        // Jika NIM ada, masukkan ke tabel presma
-        $sql_presma = "INSERT INTO presma (nim, prestasi_id, peran_mahasiswa_id) VALUES (?, ?, ?)";
-        $params_presma = [$nim, $prestasi_id, $peran_mahasiswa_id];
-        $stmt_presma = sqlsrv_query($conn, $sql_presma, $params_presma);
+    // Insert ke tabel dospem for each selected pembimbing
+    if (!empty($pembimbing_ids)) { // Check if there are any pembimbing_ids
+      foreach ($pembimbing_ids as $index => $dosen_id) {
+        $peran_dosen_id = $peran_dosen_ids[$index]; // Get the corresponding role for the supervisor
+        $sqlDospem = "INSERT INTO dospem (dosen_id, idpres, peran_dosen_id) VALUES (?, ?, ?)";
+        $paramsDospem = [$dosen_id, $idpres, $peran_dosen_id];
+        $stmtDospem = sqlsrv_query($conn, $sqlDospem, $paramsDospem);
 
-        if ($stmt_presma === false) {
-          die("Insert to presma failed: " . print_r(sqlsrv_errors(), true));
-        } else {
-          echo "Data berhasil dimasukkan ke tabel presma.";
+        if ($stmtDospem === false) {
+          die("Insert dospem gagal: " . print_r(sqlsrv_errors(), true));
         }
-      } else {
-        echo "NIM tidak ditemukan di tabel mahasiswa.";
       }
-    } else {
-      die("Failed to retrieve new prestasi_id.");
     }
-    // Masukkan data ke dalam tabel dospem
-    $sqlDospem = "INSERT INTO dospem (dosen_id, prestasi_id, peran_dosen_id) VALUES (?, ?, ?)";
-    $paramsDospem = [$dosen_id, $prestasi_id, $peran_dosen_id];
-    $stmtDospem = sqlsrv_query($conn, $sqlDospem, $paramsDospem);
-
-    // Redirect atau tampilkan pesan sukses
-    header("Location: dataPrestasi.php");
-  } else {
-    echo "Maaf, terjadi kesalahan saat mengupload file.";
   }
 }
 ?>
@@ -378,9 +382,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <?php } ?>
                                   </select>
                                 </td>
+                                </td>
                                 <td class="text-center">
-                                  <select name="peran_mahasiswa_id" class="form-control">
-                                    <option>Pilih Peran</option>
+                                  <select name="peran_mahasiswa_id[]" class="form-control" required>
                                     <option value="2">Anggota</option>
                                     <option value="3">Personal</option>
                                   </select>
@@ -420,7 +424,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               <tr class="text-center">
                                 <td class="text-center">1</td>
                                 <td class="text-center">
-                                  <select name="pembimbing[]" class="form-control">
+                                  <select name="pembimbing[]" class="form-control" required>
                                     <?php while ($row = sqlsrv_fetch_array($stmtDosen, SQLSRV_FETCH_ASSOC)) { ?>
                                       <option value="<?php echo $row['dosen_id']; ?>">
                                         <?php echo $row['nama']; ?>
@@ -429,7 +433,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                   </select>
                                 </td>
                                 <td class="text-center">
-                                  <select name="peran_dosen_id" class="form-control">
+                                  <select name="peran_dosen_id[]" class="form-control" required>
                                     <option>Pilih Peran</option>
                                     <option value="1">Melakukan pembinaan kegiatan mahasiswa di <br>
                                       bidang akademik (PA) dan kemahasiswaan <br>
