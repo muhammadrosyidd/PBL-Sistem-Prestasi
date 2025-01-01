@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../config/ConnectionPDO.php';
 // Fungsi untuk menampilkan preview data dalam tabel
 function showPreviewData($conn, $tanggal_awal, $tanggal_akhir) {
     $query = "SELECT 
-                p.prestasi_id AS 'No',
+                p.idpres AS 'No',
                 p.judul AS 'Nama Kompetisi',
                 p.tempat AS 'Lokasi Lomba',
                 p.link_kompetisi AS 'Link Kompetisi',
@@ -34,10 +34,10 @@ function showPreviewData($conn, $tanggal_awal, $tanggal_akhir) {
               JOIN tingkatLomba t ON p.tingkat_lomba_id = t.tingkat_lomba_id
               JOIN peringkat r ON p.peringkat_id = r.peringkat_id
               JOIN dokumen d ON p.dokumen_id = d.dokumen_id
-              JOIN presma ps ON p.prestasi_id = ps.prestasi_id
+              JOIN presma ps ON p.idpres = ps.idpres
               JOIN mahasiswa m ON ps.nim = m.nim
               JOIN peran_mahasiswa pma ON ps.peran_mahasiswa_id = pma.peran_mahasiswa_id
-              JOIN dospem dp ON p.prestasi_id = dp.prestasi_id
+              JOIN dospem dp ON p.idpres = dp.idpres
               JOIN dosen ds ON dp.dosen_id = ds.dosen_id
               JOIN peran_dosen dpm ON dp.peran_dosen_id = dpm.peran_dosen_id
               WHERE p.tanggal_input BETWEEN '$tanggal_awal' AND '$tanggal_akhir'";
@@ -118,7 +118,7 @@ if (isset($_POST['unduh'])) {
         }
 
         $query = "SELECT 
-                    p.prestasi_id AS 'No',
+                    p.idpres AS 'No',
                     p.judul AS 'Nama Kompetisi',
                     p.tempat AS 'Lokasi Lomba',
                     p.link_kompetisi AS 'Link Kompetisi',

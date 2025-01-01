@@ -142,6 +142,11 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 1) {
             <?php endif; ?>
         </ul>
     </div>
+    <script>
+    function confirmLogout() {
+        return confirm("Apakah anda yakin ingin Logout?");
+    }
+</script>
 </aside>
 <?php
 } else if (isset($_SESSION['role']) && $_SESSION['role'] == 2) {
@@ -268,7 +273,11 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 1) {
             <?php endif; ?>
         </ul>
     </div>
-    
+    <script>
+    function confirmLogout() {
+        return confirm("Apakah anda yakin ingin Logout?");
+    }
+</script>
 </aside>
 
 <?php
@@ -351,7 +360,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 1) {
     </div>
     <script>
     function confirmLogout() {
-        return confirm("Are you sure you want to log out?");
+        return confirm("Apakah anda yakin ingin Logout?");
     }
 </script>
 </aside>
